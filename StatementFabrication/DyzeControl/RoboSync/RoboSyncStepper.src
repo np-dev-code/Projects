@@ -9,10 +9,23 @@ DEF RoboSyncStepper( )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncStepper
+;     Purpose: Stepper drive commands and parameters for the RoboSync Hub
 ;************************************************
 END
 
 GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
+;------------------------------------------------
+; Name    : SetStepperParam
+; Purpose : Write one stepper drive parameter
+; Params  : fi_param   (IN) ENUM_STEPPER_PARAM : parameter to write
+;           fi_nVal    (IN) INT                : value, in the drive units
+; Returns : -
+; Notes   : Takes control from the SPS while writing. Units (hub guide):
+;           current 0.01 A, pulse/rev = ppr/2, jog speed 0.25 RPM (signed),
+;           accel/decel 10 RPM/s, distance pulses.
+;           Robot interpreter only (WAIT)
+;------------------------------------------------
 DECL ENUM_STEPPER_PARAM fi_param
 DECL INT fi_nVal,_nTemp
 BOOL _bFlag
@@ -54,6 +67,14 @@ bspsControl = _bFlag
 END
 
 GLOBAL DEF StepperOpcode(fi_nVal:IN)
+;------------------------------------------------
+; Name    : StepperOpcode
+; Purpose : Write a command to the stepper opcode register
+; Params  : fi_nVal    (IN) INT : opcode, e.g. ENABLE_DRIVE
+; Returns : -
+; Notes   : Leave time for the drive to act before writing the next
+;           opcode, see nStepperCmdDelay
+;------------------------------------------------
 DECL INT fi_nVal
 
    stepper_OpCode = fi_nVal
@@ -61,6 +82,15 @@ DECL INT fi_nVal
 END
 
 GLOBAL DEF StartJog( fi_nVal:IN )
+;------------------------------------------------
+; Name    : StartJog
+; Purpose : Reset alarms, enable the drive and start jogging manually,
+;           e.g. to purge or load filament
+; Params  : fi_nVal    (IN) INT : jog speed, 0.25 RPM units, negative reverses
+; Returns : -
+; Notes   : Do not use while the SPS state machine controls the stepper.
+;           Robot interpreter only (WAIT)
+;------------------------------------------------
 DECL INT fi_nVal
 
 ;Each opcode needs time to reach the drive before the next is written
@@ -79,11 +109,23 @@ StepperOpcode(COMMENCE_JOGGING)
 END
 
 GLOBAL DEF StopJog( )
+;------------------------------------------------
+; Name    : StopJog
+; Purpose : Stop manual jogging
+; Params  : -
+; Returns : -
+;------------------------------------------------
 
 StepperOpcode(STOP_JOGGING)
 END
 
 GLOBAL DEFFCT BOOL StepperError()
+;------------------------------------------------
+; Name    : StepperError
+; Purpose : Check the stepper drive alarm code
+; Params  : -
+; Returns : BOOL, TRUE if any alarm bit is set
+;------------------------------------------------
 
 RETURN stepper_alarm<>0
 
@@ -107,6 +149,13 @@ RETURN stepper_alarm<>0
 ENDFCT
 
 GLOBAL DEFFCT INT ToUnsigned16(fi_nVal:IN)
+;------------------------------------------------
+; Name    : ToUnsigned16
+; Purpose : Encode a signed value as 16 bit two's complement for an
+;           output word
+; Params  : fi_nVal    (IN) INT : -32768..32767
+; Returns : INT, 0..65535
+;------------------------------------------------
 ;Two's complement encoding of a signed value for a 16 bit output
 DECL INT fi_nVal
 
@@ -117,6 +166,13 @@ RETURN fi_nVal
 ENDFCT
 
 GLOBAL DEFFCT INT Truncate16(n:IN)
+;------------------------------------------------
+; Name    : Truncate16
+; Purpose : Keep only the low 16 bits of an INT
+; Params  : n          (IN) INT
+; Returns : INT
+; Notes   : Unused and untested, ToUnsigned16 is used instead
+;------------------------------------------------
 
 DECL INT ofs
 DECL INT n, nOut

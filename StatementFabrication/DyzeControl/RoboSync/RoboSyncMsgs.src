@@ -12,6 +12,8 @@ DEF RoboSyncMsgs(   )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncMsgs
+;     Purpose: Placeholder for operator messages
 ;************************************************
 
 END

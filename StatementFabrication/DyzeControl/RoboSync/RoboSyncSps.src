@@ -12,6 +12,9 @@ DEF RoboSyncSps(   )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncSps
+;     Purpose: Background logic, call from sps.sub: error stop, stepper
+;              state machine, heater idle timeout, program state handling
 ;************************************************
 
 INT nAnswer; 
@@ -228,6 +231,12 @@ END
 
 
 DEF StartStepperTimer(fi_nTime:IN)
+;------------------------------------------------
+; Name    : StartStepperTimer
+; Purpose : Restart STEPPER_TIMER, $TIMER_FLAG goes TRUE after fi_nTime
+; Params  : fi_nTime   (IN) INT : time, ms
+; Returns : -
+;------------------------------------------------
 ;Restart the stepper timer, $TIMER_FLAG goes TRUE after fi_nTime ms
 DECL INT fi_nTime
 
@@ -238,6 +247,12 @@ $TIMER_STOP[STEPPER_TIMER]=FALSE
 END
 
 DEF StopStepper()
+;------------------------------------------------
+; Name    : StopStepper
+; Purpose : Stop jogging and move to STOPPING for nStepperStopTime
+; Params  : -
+; Returns : -
+;------------------------------------------------
 
 StepperOpcode(STOP_JOGGING)
 StartStepperTimer(nStepperStopTime)
@@ -246,6 +261,13 @@ stepperState = #STOPPING
 END
 
 DEF EnterStepperError()
+;------------------------------------------------
+; Name    : EnterStepperError
+; Purpose : Stop jogging and move to ERROR, the drive is disabled once
+;           nStepperStopTime has elapsed
+; Params  : -
+; Returns : -
+;------------------------------------------------
 
 StepperOpcode(STOP_JOGGING)
 StartStepperTimer(nStepperStopTime)
@@ -254,6 +276,14 @@ stepperState = #ERROR
 END
 
 DEFFCT INT CalcStepperSpeed()
+;------------------------------------------------
+; Name    : CalcStepperSpeed
+; Purpose : Extruder jog speed for the current robot speed
+; Params  : -
+; Returns : INT, jog speed register value
+; Notes   : Uses the programmed $VEL.CP when the robot is stationary so
+;           purging in place still extrudes
+;------------------------------------------------
 ;Extruder jog speed for the current robot speed, uses the programmed
 ;speed when stationary so purging in place still extrudes
 

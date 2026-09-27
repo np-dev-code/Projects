@@ -10,6 +10,9 @@ DEF RoboSyncInterrupt( )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncInterrupt
+;     Purpose: Resume interrupt: restores temperatures after a heater
+;              timeout and waits for the extruder before continuing
 ;************************************************
 
 BRAKE
