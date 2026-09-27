@@ -18,7 +18,15 @@ _rVolPerRev =  _rVolPerMM/_rRevsPerMM
 ;the calculation is done offline 60*0.25=15
 _rSpeed = rExtrusionConstant*(15*_rVolPerSec/_rVolPerRev)
 
-_nSpeed = _rSpeed ;Trunctate the real to an int
+;Clamp to the positive range of the 16 bit jog speed register
+IF _rSpeed > 32767 THEN
+   _rSpeed = 32767
+ENDIF
+IF _rSpeed < 0 THEN
+   _rSpeed = 0
+ENDIF
+
+_nSpeed = _rSpeed ;REAL to INT assignment rounds to nearest
 
 RETURN _nSpeed
 

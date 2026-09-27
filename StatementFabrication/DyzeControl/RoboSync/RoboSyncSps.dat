@@ -27,6 +27,7 @@ GLOBAL BOOL bResetStepper = FALSE
 GLOBAL BOOL bEnableStepper = FALSE
 GLOBAL BOOL bOverrideStepper = FALSE
 GLOBAL BOOL bRoboSyncInterrupt = FALSE
+GLOBAL BOOL bErrorStopSent = FALSE
 
 GLOBAL BOOL bExtrude = FALSE
 

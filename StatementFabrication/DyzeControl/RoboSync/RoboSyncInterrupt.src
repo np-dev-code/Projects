@@ -14,18 +14,14 @@ DEF RoboSyncInterrupt( )
 
 BRAKE
 
-IF (SaveTemperature[1] <> GetSetTemperature(#HEATED_BED)) THEN
-     SetTemperature(#HEATED_BED, SaveTemperature[1])
-ENDIF  
-IF (SaveTemperature[2] <> GetSetTemperature(#EXTRUDER0)) THEN
+;Only restore temperatures if the heater timeout switched them off
+IF bTemperatureSave THEN
+   SetTemperature(#HEATED_BED, SaveTemperature[1])
    SetTemperature(#EXTRUDER0,SaveTemperature[2])
-ENDIF
-IF (SaveTemperature[3] <> GetSetTemperature(#EXTRUDER1)) THEN
    SetTemperature(#EXTRUDER1,SaveTemperature[3])
-ENDIF   
-IF (SaveTemperature[4] <> GetSetTemperature(#NOZZLE)) THEN
    SetTemperature(#NOZZLE,SaveTemperature[4])
-ENDIF 
+   bTemperatureSave = FALSE
+ENDIF
 
 WaitForExtruderTemps()
 
