@@ -1,0 +1,129 @@
+&ACCESS RVO3
+&REL 16
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF RoboSyncStepper( )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+END
+
+GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
+DECL ENUM_STEPPER_PARAM fi_param
+DECL INT fi_nVal,_nTemp
+BOOL _bFlag
+
+_bFlag = bspsControl
+bSpsControl = FALSE
+WAIT FOR bProcessing==FALSE
+
+SWITCH fi_param
+   
+   CASE #CURRENT
+      stepper_Current = fi_nVal
+   CASE #IDLE_CURRENT
+      stepper_idleCurrent = fi_nVal
+   CASE #PULSE_PER_REV
+      stepper_pulsePerRev = fi_nVal
+   CASE #JOG_SPEED  
+      stepper_jogSpeed = ToUnsigned16(fi_nVal)
+   CASE #JOG_ACCEL
+     stepper_jogAccel = fi_nVal
+   CASE #JOG_DECEL
+     stepper_jogDecel = fi_nVal
+   CASE #SPEED
+      stepper_speed = fi_nVal
+   CASE #ACCEL
+      stepper_Accel = fi_nVal
+   CASE #DECEL
+      stepper_Decel = fi_nVal
+   CASE #DISTANCE
+      stepper_Dist = fi_nVal
+   CASE #SET_POSITION ;This might need to be performed in a single write
+      stepper_OpCode2 = 0
+      stepper_OpCode2Param = fi_nVal 
+      stepper_OpCode2 = SET_POSITION
+
+ENDSWITCH
+
+bspsControl = _bFlag
+END
+
+GLOBAL DEF StepperOpcode(fi_nVal:IN)
+DECL INT fi_nVal
+
+   stepper_OpCode = fi_nVal
+
+END
+
+GLOBAL DEF StartJog( fi_nVal:IN )
+DECL INT fi_nVal
+
+StepperOpcode(RESET_ALARM_CODE)
+StepperOpcode(ENABLE_DRIVE)
+
+SetStepperParam(#JOG_SPEED,fi_nVal)
+StepperOpcode(COMMENCE_JOGGING)
+
+END
+
+GLOBAL DEF StopJog( )
+
+StepperOpcode(STOP_JOGGING)
+END
+
+GLOBAL DEFFCT BOOL StepperError()
+
+RETURN stepper_alarm<>0
+
+ ;stepper_positionLimit   
+; stepper_ccwLimit        
+ ;stepper_cwLimit         
+; stepper_overTemperature 
+; stepper_interalVoltage  
+ ;stepper_overVoltage     
+; stepper_underVoltage    
+; stepper_overCurrent     
+
+ ;stepper_openMotorWinding
+ ;stepper_encoderError    
+ ;stepper_commsError      
+ ;stepper_flashError      
+ ;stepper_NoMove          
+ ;stepper_AlarmSpare1     
+ ;stepper_blankQSegment   
+ ;stepper_AlarmSpare2     
+ENDFCT
+
+GLOBAL DEFFCT INT ToUnsigned16(fi_nVal:IN)
+;Two's complement encoding of a signed value for a 16 bit output
+DECL INT fi_nVal
+
+IF fi_nVal < 0 THEN
+   RETURN 65536 + fi_nVal
+ENDIF
+RETURN fi_nVal
+ENDFCT
+
+GLOBAL DEFFCT INT Truncate16(n:IN)
+
+DECL INT ofs
+DECL INT n, nOut
+DECL CHAR buf[4]
+
+
+ofs=0
+cast_to(buf[],ofs,n)
+
+buf[3] = 0
+buf[4] = 0
+
+ofs=0
+cast_from(buf[],ofs,nOut)
+
+return nOut
+ENDFCT
