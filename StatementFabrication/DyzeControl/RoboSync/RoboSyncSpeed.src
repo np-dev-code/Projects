@@ -1,0 +1,26 @@
+&ACCESS RVP
+&REL 11
+GLOBAL DEFFCT INT RoboSyncSpeed(fi_rRobotSpeed:IN)
+
+REAL fi_rRobotSpeed
+REAL _rVolPerMM, _rSpeed,_rVolPerSec, _rRevsPerMM,_rVolPerRev
+INT _nSpeed
+
+;Robot speed is passed in as m/sec, converted to mm/s by *1000
+_rVolPerSec = rLayerHeight*rLayerWidth*(fi_rRobotSpeed*1000)
+
+_rRevsPerMM = rStepsPerMM / rStepsPerRev
+_rVolPerMM = PI * (rFilamentOD*rFilamentOD)/4
+_rVolPerRev =  _rVolPerMM/_rRevsPerMM
+
+; The 15 is 60 to convert rps to rpm, *0.25, to turn rpm
+;into units needed for JOG register, as these are constant
+;the calculation is done offline 60*0.25=15
+_rSpeed = rExtrusionConstant*(15*_rVolPerSec/_rVolPerRev)
+
+_nSpeed = _rSpeed ;Trunctate the real to an int
+
+RETURN _nSpeed
+
+ENDFCT
+

@@ -1,0 +1,17 @@
+&ACCESS RVO
+&REL 243
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF RoboSyncMsgs(   )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+
+END

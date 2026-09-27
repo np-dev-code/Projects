@@ -1,0 +1,42 @@
+&ACCESS RVO2
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF RoboSyncInterrupt( )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+
+BRAKE
+
+IF (SaveTemperature[1] <> GetSetTemperature(#HEATED_BED)) THEN
+     SetTemperature(#HEATED_BED, SaveTemperature[1])
+ENDIF  
+IF (SaveTemperature[2] <> GetSetTemperature(#EXTRUDER0)) THEN
+   SetTemperature(#EXTRUDER0,SaveTemperature[2])
+ENDIF
+IF (SaveTemperature[3] <> GetSetTemperature(#EXTRUDER1)) THEN
+   SetTemperature(#EXTRUDER1,SaveTemperature[3])
+ENDIF   
+IF (SaveTemperature[4] <> GetSetTemperature(#NOZZLE)) THEN
+   SetTemperature(#NOZZLE,SaveTemperature[4])
+ENDIF 
+
+WaitForExtruderTemps()
+
+
+IF StepperError() THEN 
+   bResetStepper = TRUE
+ENDIF 
+
+WAIT FOR stepperState==#RUNNING
+
+
+bRoboSyncInterrupt = FALSE
+
+END

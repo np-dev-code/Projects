@@ -1,0 +1,609 @@
+&ACCESS RVO3
+&REL 16
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF RoboSyncControl( )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+END
+
+
+
+GLOBAL DEFFCT REAL GetLowerTemperature (fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_SetPointLowLimit/10.0
+CASE #EXTRUDER0 
+ return pid1_SetPointLowLimit/10.0
+CASE #EXTRUDER1 
+ return pid2_SetPointLowLimit/10.0
+CASE #NOZZLE 
+ return pid3_SetPointLowLimit/10.0
+DEFAULT 
+   return 0.0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetLowerTemperature (fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+nVal =  fi_temp*10
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid0_SetPointLowLimit = nVal
+CASE #EXTRUDER0 
+   pid1_SetPointLowLimit = nVal
+CASE #EXTRUDER1 
+   pid2_SetPointLowLimit = nVal
+CASE #NOZZLE 
+   pid3_SetPointLowLimit = nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEFFCT REAL GetUpperTemperature (fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_SetPointHighLimit/10.0
+CASE #EXTRUDER0 
+ return pid1_SetPointHighLimit/10.0
+CASE #EXTRUDER1 
+ return pid2_SetPointHighLimit/10.0
+CASE #NOZZLE 
+ return pid3_SetPointHighLimit/10.0
+DEFAULT 
+   return 0.0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetUpperTemperature (fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+nVal =  fi_temp*10
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid1_SetPointHighLimit = nVal
+CASE #EXTRUDER0 
+   pid1_SetPointHighLimit = nVal
+CASE #EXTRUDER1 
+   pid2_SetPointHighLimit = nVal
+CASE #NOZZLE 
+   pid3_SetPointHighLimit = nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEFFCT REAL GetTemperature (fi_pidType:IN)
+
+DECL ENUM_PID_TYPE fi_pidType
+
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_temp/10.0
+CASE #EXTRUDER0 
+ return pid1_temp/10.0
+CASE #EXTRUDER1 
+ return pid2_temp/10.0
+CASE #NOZZLE 
+ return pid3_temp/10.0
+DEFAULT 
+   return 0.0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF PidSetPoint(fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+nVal =  fi_temp*10
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid1_SetPoint = nVal
+CASE #EXTRUDER0 
+   pid1_SetPoint = nVal
+CASE #EXTRUDER1 
+   pid2_SetPoint = nVal
+CASE #NOZZLE 
+   pid3_SetPoint = nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEFFCT INT GetPidKp (fi_pidType:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_Kp
+CASE #EXTRUDER0 
+ return pid1_Kp
+CASE #EXTRUDER1 
+ return pid2_Kp
+CASE #NOZZLE 
+ return pid3_Kp
+DEFAULT 
+   return 0
+
+ENDSWITCH
+
+ENDFCT
+
+
+GLOBAL DEF SetPidKp (fi_pidType:IN, fi_nVal:IN)
+DECL INT fi_nVal
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid0_Kp = fi_nVal
+CASE #EXTRUDER0 
+   pid1_Kp = fi_nVal
+CASE #EXTRUDER0 
+   pid2_Kp = fi_nVal
+CASE #NOZZLE 
+   pid3_Kp = fi_nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEFFCT INT GetPidKd (fi_pidType:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_Kd
+CASE #EXTRUDER0 
+ return pid1_Kd
+CASE #EXTRUDER1 
+ return pid2_Kd
+CASE #NOZZLE 
+ return pid3_Kd
+DEFAULT 
+   return 0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetPidKd (fi_pidType:IN, fi_nVal:IN)
+DECL INT fi_nVal
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid0_Kd = fi_nVal
+CASE #EXTRUDER0 
+   pid1_Kd = fi_nVal
+CASE #EXTRUDER0 
+   pid2_Kd = fi_nVal
+CASE #NOZZLE 
+   pid3_Kd = fi_nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+GLOBAL DEFFCT INT GetPidKi (fi_pidType:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_Ki
+CASE #EXTRUDER0 
+ return pid1_Ki
+CASE #EXTRUDER1 
+ return pid2_Ki
+CASE #NOZZLE 
+ return pid3_Ki
+DEFAULT 
+   return 0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetAlarmLimit (fi_pidType:IN, fi_temp:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT _nVal
+
+_nVal =  fi_temp*10
+
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ pid0_SetAlarm = _nVal
+CASE #EXTRUDER0 
+ pid1_SetAlarm = _nVal
+CASE #EXTRUDER1 
+ pid2_SetAlarm = _nVal
+CASE #NOZZLE 
+ pid3_SetAlarm = _nVal
+DEFAULT 
+ 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEFFCT REAL GetAlarmLimit (fi_pidType:IN)
+DECL REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_AlarmLimit/10.0
+CASE #EXTRUDER0 
+ return pid1_AlarmLimit/10.0
+CASE #EXTRUDER1 
+ return pid2_AlarmLimit/10.0
+CASE #NOZZLE 
+ return pid3_AlarmLimit/10.0
+DEFAULT 
+   return 0.0
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetAutotune(fi_pidType:IN,fi_nType:IN)
+DECL INT fi_nType
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+  pid0_Autotune = fi_nType
+CASE #EXTRUDER0 
+  pid0_Autotune = fi_nType
+CASE #EXTRUDER1 
+  pid0_Autotune = fi_nType
+CASE #NOZZLE 
+  pid0_Autotune = fi_nType
+DEFAULT 
+
+ENDSWITCH
+
+END
+GLOBAL DEFFCT BOOL GetAutotuneBit(fi_pidType:IN)
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+  return pid0_AutoTuneBit
+CASE #EXTRUDER0 
+  return pid1_AutoTuneBit
+CASE #EXTRUDER1
+  return pid2_AutoTuneBit
+CASE #NOZZLE 
+  return pid3_AutoTuneBit
+DEFAULT 
+   return FALSE
+
+ENDSWITCH
+
+ENDFCT
+
+
+GLOBAL DEF SetPidKi (fi_pidType:IN, fi_nVal:IN)
+DECL INT fi_nVal
+DECL ENUM_PID_TYPE fi_pidType
+DECL INT nVal
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   pid0_Ki = fi_nVal
+CASE #EXTRUDER0 
+   pid1_Ki = fi_nVal
+CASE #EXTRUDER0 
+   pid2_Ki = fi_nVal
+CASE #NOZZLE 
+   pid3_Ki = fi_nVal
+DEFAULT 
+
+ENDSWITCH
+
+END
+
+GLOBAL DEF SetTemperature (fi_pidType:IN,fi_temp:IN)
+REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+INT _nVal
+
+_nVal = fi_temp*10
+
+IF fi_temp < GetLowerTemperature(fi_pidType) THEN
+SetLowerTemperature(fi_pidType ,fi_temp * pidDefaultLowerLimit)
+ENDIF
+
+IF fi_temp > GetUpperTemperature(fi_pidType)  THEN
+   SetUpperTemperature(fi_pidType, fi_temp * pidDefaultUpperLimit )
+ENDIF
+
+PidSetPoint(fi_pidType,fi_temp)
+
+END
+
+GLOBAL DEFFCT REAL GetSetTemperature (fi_pidType:IN)
+REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+INT _nVal
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+ return pid0_SetPoint/10.0
+CASE #EXTRUDER0 
+ return pid1_SetPoint/10.0
+CASE #EXTRUDER1 
+ return pid2_SetPoint/10.0
+CASE #NOZZLE 
+ return pid3_SetPoint/10.0
+DEFAULT 
+   return 0.0
+
+ENDSWITCH
+ENDFCT
+
+
+GLOBAL DEF AutoTuneProcess(fi_pidType:IN,fi_temp:IN,fi_fast:IN)
+
+REAL fi_temp
+DECL ENUM_PID_TYPE fi_pidType
+INT fi_fast, _nVal
+
+
+SetAutotune(fi_pidType,AUTOTUNE_STOP)
+WAIT SEC 1
+
+SetTemperature(fi_pidType,fi_temp)
+WAIT SEC 1
+SetAutoTune(fi_pidType,fi_fast)
+
+WAIT FOR GetAutotuneBit(fi_pidType) == FALSE
+
+END
+
+GLOBAL DEF SetExtuderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
+REAL fi_Temp1,fi_Temp2
+
+SetTemperature(#EXTRUDER0,fi_Temp1)
+SetTemperature(#EXTRUDER1,fi_Temp2)
+
+END
+
+GLOBAL DEF WaitForExtruderTemps()
+
+WAIT FOR  CheckAtTemperature(#EXTRUDER0,rTemperatureTolerance) AND CheckAtTemperature(#EXTRUDER1,rTemperatureTolerance)
+
+END
+
+GLOBAL DEFFCT BOOL CheckAtTemperature (fi_pidType:IN,fi_rTol:IN)
+REAL fi_rTol
+DECL ENUM_PID_TYPE fi_pidType
+
+INT _nTol
+
+_nTol = fi_rTol*10
+
+SWITCH fi_pidType
+
+CASE #HEATED_BED
+   IF ( (pid0_temp > (pid0_SetPoint-_nTol)) AND (pid0_temp < (pid0_SetPoint +_nTol)) )THEN
+     RETURN TRUE
+   ELSE 
+      RETURN FALSE
+   ENDIF
+CASE #EXTRUDER0 
+   IF ( (pid1_temp > (pid1_SetPoint-_nTol)) AND (pid1_temp < (pid1_SetPoint +_nTol)) )THEN
+      RETURN TRUE
+   ELSE 
+      RETURN FALSE
+   ENDIF
+CASE #EXTRUDER1 
+ IF ( (pid1_temp > (pid2_SetPoint-_nTol)) AND (pid1_temp < (pid2_SetPoint +_nTol)) )THEN
+      RETURN TRUE
+   ELSE 
+      RETURN FALSE
+   ENDIF
+CASE #NOZZLE 
+ IF ( (pid1_temp > (pid3_SetPoint-_nTol)) AND (pid1_temp < (pid3_SetPoint +_nTol)) )THEN
+      RETURN TRUE
+   ELSE 
+      RETURN FALSE
+   ENDIF
+DEFAULT 
+   RETURN FALSE
+
+ENDSWITCH
+
+ENDFCT
+
+
+
+GLOBAL DEFFCT BOOL PidError(fi_pidType:IN)
+DECL ENUM_PID_TYPE fi_pidType
+
+SWITCH fi_pidType
+   
+CASE #HEATED_BED
+  RETURN (pid0_alarm1 OR pid0_alarm2 OR pid0_alarm3 OR pid0_alarm4)
+CASE #EXTRUDER0 
+  RETURN (pid1_alarm1 OR pid1_alarm2 OR pid1_alarm3 OR pid1_alarm4)
+CASE #EXTRUDER1
+  RETURN (pid2_alarm1 OR pid2_alarm2 OR pid2_alarm3 OR pid2_alarm4)
+CASE #NOZZLE 
+  RETURN (pid3_alarm1 OR pid3_alarm2 OR pid3_alarm3 OR pid3_alarm4)
+DEFAULT 
+   RETURN FALSE
+
+ENDSWITCH
+
+ENDFCT
+
+GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
+DECL ENUM_STEPPER_PARAM fi_param
+DECL INT fi_nVal,_nTemp
+BOOL _bFlag
+
+_bFlag = bspsControl
+WAIT FOR bProcessing==FALSE
+bSpsControl = FALSE
+
+SWITCH fi_param
+   
+   CASE #CURRENT
+      stepper_Current = fi_nVal
+   CASE #IDLE_CURRENT
+      stepper_idleCurrent = fi_nVal
+   CASE #PULSE_PER_REV
+      stepper_pulsePerRev = fi_nVal
+   CASE #JOG_SPEED  
+      IF fi_nVal<0 THEN 
+         _nTemp = 66536 + fi_nVal ; Could use Truncate16, bit needs testing
+          stepper_jogSpeed = _nTemp
+      ELSE
+         stepper_jogSpeed = fi_nVal
+      ENDIF
+   CASE #JOG_ACCEL
+     stepper_jogAccel = fi_nVal
+   CASE #JOG_DECEL
+     stepper_jogDecel = fi_nVal
+   CASE #SPEED
+      stepper_speed = fi_nVal
+   CASE #ACCEL
+      stepper_Accel = fi_nVal
+   CASE #DECEL
+      stepper_Decel = fi_nVal
+   CASE #DISTANCE
+      stepper_Dist = fi_nVal
+   CASE #SET_POSITION ;This might need to be performed in a single write
+      stepper_OpCode2 = 0
+      stepper_OpCode2Param = fi_nVal 
+      stepper_OpCode2 = SET_POSITION
+
+ENDSWITCH
+
+bspsControl = _bFlag
+END
+
+GLOBAL DEF StepperOpcode(fi_nVal:IN)
+DECL INT fi_nVal
+
+   stepper_OpCode = fi_nVal
+
+END
+
+GLOBAL DEF StartJog( fi_nVal:IN )
+DECL INT fi_nVal
+
+StepperOpcode(RESET_ALARM_CODE)
+StepperOpcode(ENABLE_DRIVE)
+
+SetStepperParam(#JOG_SPEED,fi_nVal)
+StepperOpcode(COMMENCE_JOGGING)
+
+END
+
+
+GLOBAL DEF StopJog( )
+
+StepperOpcode(STOP_JOGGING)
+END
+
+GLOBAL DEFFCT BOOL StepperError()
+
+RETURN stepper_alarm<>0
+
+ ;stepper_positionLimit   
+; stepper_ccwLimit        
+ ;stepper_cwLimit         
+; stepper_overTemperature 
+; stepper_interalVoltage  
+ ;stepper_overVoltage     
+; stepper_underVoltage    
+; stepper_overCurrent     
+
+ ;stepper_openMotorWinding
+ ;stepper_encoderError    
+ ;stepper_commsError      
+ ;stepper_flashError      
+ ;stepper_NoMove          
+ ;stepper_AlarmSpare1     
+ ;stepper_blankQSegment   
+ ;stepper_AlarmSpare2     
+ENDFCT
+
+GLOBAL DEFFCT INT Truncate16(n:IN)
+
+DECL INT ofs
+DECL INT n, nOut
+DECL CHAR buf[4]
+
+
+ofs=0
+cast_to(buf[],ofs,n)
+
+buf[3] = 0
+buf[4] = 0
+
+ofs=0
+cast_from(buf[],ofs,nOut)
+
+return nOut
+ENDFCT
+

@@ -1,0 +1,65 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM DISKPATH = TP/CNCR TP/Cead
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 237
+DEFDAT  RoboSyncSps PUBLIC
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+GLOBAL ENUM ENUM_STEPPER_STATE NOT_INITIALISED, RESET, RESETTING, ENABLED, RUNNING, RETRACT, STOPPING, STOPPED, ERROR
+DECL GLOBAL ENUM_STEPPER_STATE stepperState=#NOT_INITIALISED
+
+
+GLOBAL BOOL bSpsControl=FALSE
+GLOBAL BOOL bProcessing=FALSE
+
+GLOBAL BOOL bPidError = FALSE
+GLOBAL BOOL bTimeourError = FALSE
+GLOBAL BOOL bStepperError = FALSE
+GLOBAL BOOL bResetStepper = FALSE
+GLOBAL BOOL bEnableStepper = FALSE
+GLOBAL BOOL bOverrideStepper = FALSE
+GLOBAL BOOL bRoboSyncInterrupt = FALSE
+
+GLOBAL BOOL bExtrude = FALSE
+
+GLOBAL INT stepperSpeed = 0
+GLOBAL INT prevStepperSpeed = 0
+
+GLOBAL CONST INT STEPPER_TIMER=16
+GLOBAL INT nStepperTimeout = 5000
+
+GLOBAL CONST INT RETRACT_TIMER=17
+GLOBAL INT nRetractTime = 500
+
+GLOBAL INT nRetractSpeed = 100
+
+GLOBAL BOOL bEnableRetract = FALSE
+
+
+
+GLOBAL CONST INT HEATER_TIMER= 18
+GLOBAL INT nHeaterTimeout=600000
+
+
+GLOBAL BOOL bOverrideHeaters=FALSE
+GLOBAL BOOL bOverrideSteppers=FALSE
+
+GLOBAL BOOL bEnableHeaters=FALSE
+
+GLOBAL REAL SaveTemperature[4]
+SaveTemperature[1] = 0.0
+SaveTemperature[2] = 0.0
+SaveTemperature[3] = 0.0
+SaveTemperature[4] = 0.0
+
+GLOBAL BOOL bTemperatureSave=FALSE
+
+ENDDAT

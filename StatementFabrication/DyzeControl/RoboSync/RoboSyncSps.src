@@ -1,0 +1,203 @@
+&ACCESS RVO
+&REL 237
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF RoboSyncSps(   )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+
+INT nAnswer; 
+DECL STATE_T E_stat
+DECL MODUS_T E_mode
+
+
+;One of the outputs is used to determine if the system 
+;is just booting up, set straight away so we can initialise
+;any variables here
+IF oStartUpFlag == FALSE THEN
+  stepperState = #NOT_INITIALISED 
+  oStartUpFlag = TRUE
+ENDIF
+
+
+
+;STOP IF anything is in error
+
+bStepperError = StepperError() OR bTimeourError
+bPidError = PidError(#EXTRUDER0) OR PidError(#EXTRUDER1)
+
+IF (bPidError OR bStepperError) THEN
+   CWRITE($CMD,E_stat,E_mode,"STOP 1")
+ENDIF
+
+
+
+bProcessing = TRUE
+IF bSpsControl == TRUE THEN
+SWITCH stepperState
+   
+   CASE #NOT_INITIALISED
+      IF bEnableStepper THEN
+         stepperState = #RESET
+      ENDIF   
+      
+   CASE #RESET
+         bResetStepper = FALSE
+         StepperOpcode(RESET_ALARM_CODE)
+         stepperState = #RESETTING
+         
+         $TIMER[STEPPER_TIMER]=-nStepperTimeout
+         $TIMER_STOP[STEPPER_TIMER]=FALSE
+         
+   CASE #RESETTING
+      IF (stepper_fault==FALSE) THEN
+         StepperOpcode(ENABLE_DRIVE)
+         $TIMER[STEPPER_TIMER]=-nStepperTimeout
+         $TIMER_STOP[STEPPER_TIMER]=FALSE
+         bTimeourError = FALSE
+         stepperState = #ENABLED 
+      ENDIF
+      IF $TIMER_FLAG[STEPPER_TIMER] THEN
+         stepperState = #ERROR 
+         bTimeourError = TRUE
+         $TIMER_STOP[STEPPER_TIMER]=TRUE
+      ENDIF
+      
+   CASE #ENABLED
+        IF (stepper_enabled) THEN
+            StepperOpcode(COMMENCE_JOGGING)
+            stepperState = #RUNNING
+        ENDIF
+
+   CASE #RUNNING
+      
+       IF bExtrude AND NOT(bOverrideStepper) THEN
+
+          IF $VEL_ACT < 0.001 THEN
+            stepperSpeed = RoboSyncSpeed( $VEL.CP )
+          ELSE
+            stepperSpeed = RoboSyncSpeed( $VEL_ACT )
+          ENDIF
+              
+          IF stepperSpeed <> prevStepperSpeed THEN
+            stepper_jogSpeed = stepperSpeed  
+          ENDIF
+          prevStepperSpeed = stepperSpeed
+       
+       ELSE
+       
+         IF NOT (bOverrideStepper) AND bEnableRetract THEN
+             stepper_jogSpeed = -nRetractSpeed
+             $TIMER[RETRACT_TIMER]=-nRetractTime
+             $TIMER_STOP[RETRACT_TIMER]=FALSE
+             
+             stepperState = #RETRACT
+          ELSE   
+             StepperOpcode(STOP_JOGGING)
+             stepperState = #STOPPING
+         ENDIF
+ 
+       ENDIF      
+       
+       IF(bEnableStepper==FALSE)THEN
+          StepperOpcode(STOP_JOGGING)
+          stepperState = #STOPPING
+       ENDIF
+       
+        IF(bStepperError)THEN
+          StepperOpcode(STOP_JOGGING)
+          stepperState = #ERROR
+        ENDIF
+        
+   CASE #RETRACT
+         IF $TIMER_FLAG[RETRACT_TIMER] THEN
+         StepperOpcode(STOP_JOGGING)
+         stepperState = #STOPPING
+         $TIMER_STOP[RETRACT_TIMER]=TRUE
+      ENDIF
+        
+   CASE #STOPPING
+      IF NOT ((stepper_moving) OR (stepper_stopping)) THEN
+         stepperState = #STOPPED
+      ENDIF
+   
+   CASE #STOPPED
+      IF bEnableStepper AND NOT(bOverrideStepper) THEN
+         StepperOpcode(COMMENCE_JOGGING)
+         stepperState = #RUNNING
+      ENDIF
+   CASE #ERROR
+         IF NOT (stepper_moving) and stepper_enabled THEN
+            StepperOpcode(DISABLE_DRIVE)
+         ENDIF
+         IF bResetStepper THEN
+            stepperState = #RESET
+         ENDIF
+
+ENDSWITCH
+ENDIF
+bProcessing = FALSE
+
+IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
+      bOverrideStepper = TRUE
+      bRoboSyncInterrupt = FALSE
+ENDIF
+
+IF ($PRO_STATE1 <> #P_FREE) THEN
+	IF ($PRO_STATE1 <> #P_ACTIVE) THEN  ;If program is not active
+		IF bOverrideHeaters==FALSE THEN
+			$TIMER_STOP[HEATER_TIMER] = FALSE
+      ENDIF
+      
+		IF ($PRO_STATE1 == #P_STOP) THEN
+			bRoboSyncInterrupt = TRUE
+		ENDIF
+	ELSE
+		bOverrideStepper = FALSE   
+		bOverrideHeaters   = FALSE
+		$TIMER_STOP[HEATER_TIMER] = TRUE
+		$TIMER_FLAG[HEATER_TIMER] = FALSE
+		$TIMER[HEATER_TIMER] = -nHeaterTimeout
+		ENDIF
+ELSE
+   $TIMER_STOP[HEATER_TIMER] = FALSE
+ENDIF
+	
+
+IF $TIMER_FLAG[HEATER_TIMER] THEN
+   IF (bTemperatureSave == FALSE) THEN
+      
+      SaveTemperature[1] = GetSetTemperature(#HEATED_BED)
+      SaveTemperature[2] = GetSetTemperature(#EXTRUDER0)
+      SaveTemperature[3] = GetSetTemperature(#EXTRUDER1)
+      SaveTemperature[4] = GetSetTemperature(#NOZZLE)
+      bTemperatureSave = TRUE
+      
+      PidSetPoint(#HEATED_BED,0 )
+      PidSetPoint(#EXTRUDER0,0 )
+      PidSetPoint(#EXTRUDER1,0 )
+      PidSetPoint(#NOZZLE,0 )
+      
+      $TIMER_STOP[HEATER_TIMER] = TRUE
+      $TIMER_FLAG[HEATER_TIMER] = FALSE
+      $TIMER[HEATER_TIMER] = -nHeaterTimeout
+   ENDIF
+ENDIF
+		
+ 
+IF ($ALARM_STOP) THEN
+    bOverrideHeaters =  NOT ((bEnableHeaters) AND (NOT $TIMER_FLAG[HEATER_TIMER]))
+ELSE
+   bOverrideHeaters   = TRUE
+   bOverrideStepper = TRUE
+ENDIF
+
+END
