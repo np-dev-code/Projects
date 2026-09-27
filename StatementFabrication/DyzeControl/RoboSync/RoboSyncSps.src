@@ -35,7 +35,12 @@ bStepperError = StepperError() OR bTimeourError
 bPidError = PidError(#EXTRUDER0) OR PidError(#EXTRUDER1)
 
 IF (bPidError OR bStepperError) THEN
-   CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   IF NOT bErrorStopSent THEN
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      bErrorStopSent = TRUE
+   ENDIF
+ELSE
+   bErrorStopSent = FALSE
 ENDIF
 
 
@@ -74,7 +79,14 @@ SWITCH stepperState
    CASE #ENABLED
         IF (stepper_enabled) THEN
             StepperOpcode(COMMENCE_JOGGING)
+            $TIMER_STOP[STEPPER_TIMER]=TRUE
             stepperState = #RUNNING
+        ELSE
+           IF $TIMER_FLAG[STEPPER_TIMER] THEN
+              stepperState = #ERROR 
+              bTimeourError = TRUE
+              $TIMER_STOP[STEPPER_TIMER]=TRUE
+           ENDIF
         ENDIF
 
    CASE #RUNNING
@@ -95,7 +107,8 @@ SWITCH stepperState
        ELSE
        
          IF NOT (bOverrideStepper) AND bEnableRetract THEN
-             stepper_jogSpeed = -nRetractSpeed
+             stepper_jogSpeed = ToUnsigned16(-nRetractSpeed)
+             prevStepperSpeed = -1 ;Force extrude speed to be rewritten
              $TIMER[RETRACT_TIMER]=-nRetractTime
              $TIMER_STOP[RETRACT_TIMER]=FALSE
              
@@ -130,7 +143,8 @@ SWITCH stepperState
       ENDIF
    
    CASE #STOPPED
-      IF bEnableStepper AND NOT(bOverrideStepper) THEN
+      IF bEnableStepper AND bExtrude AND NOT(bOverrideStepper) THEN
+         prevStepperSpeed = -1 ;Force extrude speed to be rewritten
          StepperOpcode(COMMENCE_JOGGING)
          stepperState = #RUNNING
       ENDIF
@@ -149,6 +163,7 @@ bProcessing = FALSE
 IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
       bOverrideStepper = TRUE
       bRoboSyncInterrupt = FALSE
+      bTemperatureSave = FALSE
 ENDIF
 
 IF ($PRO_STATE1 <> #P_FREE) THEN
@@ -158,6 +173,7 @@ IF ($PRO_STATE1 <> #P_FREE) THEN
       ENDIF
       
 		IF ($PRO_STATE1 == #P_STOP) THEN
+			bOverrideStepper = TRUE ;Stop extruding while the program is stopped
 			bRoboSyncInterrupt = TRUE
 		ENDIF
 	ELSE

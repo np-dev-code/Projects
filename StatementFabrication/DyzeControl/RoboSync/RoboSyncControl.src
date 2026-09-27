@@ -14,8 +14,7 @@ END
 
 
 
-GLOBAL DEFFCT REAL GetLowerTemperature (fi_pidType:IN, fi_temp:IN)
-DECL REAL fi_temp
+GLOBAL DEFFCT REAL GetLowerTemperature (fi_pidType:IN)
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -58,8 +57,7 @@ ENDSWITCH
 
 END
 
-GLOBAL DEFFCT REAL GetUpperTemperature (fi_pidType:IN, fi_temp:IN)
-DECL REAL fi_temp
+GLOBAL DEFFCT REAL GetUpperTemperature (fi_pidType:IN)
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -89,7 +87,7 @@ nVal =  fi_temp*10
 SWITCH fi_pidType
 
 CASE #HEATED_BED
-   pid1_SetPointHighLimit = nVal
+   pid0_SetPointHighLimit = nVal
 CASE #EXTRUDER0 
    pid1_SetPointHighLimit = nVal
 CASE #EXTRUDER1 
@@ -134,7 +132,7 @@ nVal =  fi_temp*10
 SWITCH fi_pidType
 
 CASE #HEATED_BED
-   pid1_SetPoint = nVal
+   pid0_SetPoint = nVal
 CASE #EXTRUDER0 
    pid1_SetPoint = nVal
 CASE #EXTRUDER1 
@@ -177,13 +175,13 @@ DECL INT nVal
 SWITCH fi_pidType
 
 CASE #HEATED_BED
-   pid0_Kp = fi_nVal
+   pid0_SetKp = fi_nVal
 CASE #EXTRUDER0 
-   pid1_Kp = fi_nVal
-CASE #EXTRUDER0 
-   pid2_Kp = fi_nVal
+   pid1_SetKp = fi_nVal
+CASE #EXTRUDER1 
+   pid2_SetKp = fi_nVal
 CASE #NOZZLE 
-   pid3_Kp = fi_nVal
+   pid3_SetKp = fi_nVal
 DEFAULT 
 
 ENDSWITCH
@@ -219,13 +217,13 @@ DECL INT nVal
 SWITCH fi_pidType
 
 CASE #HEATED_BED
-   pid0_Kd = fi_nVal
+   pid0_SetKd = fi_nVal
 CASE #EXTRUDER0 
-   pid1_Kd = fi_nVal
-CASE #EXTRUDER0 
-   pid2_Kd = fi_nVal
+   pid1_SetKd = fi_nVal
+CASE #EXTRUDER1 
+   pid2_SetKd = fi_nVal
 CASE #NOZZLE 
-   pid3_Kd = fi_nVal
+   pid3_SetKd = fi_nVal
 DEFAULT 
 
 ENDSWITCH
@@ -307,11 +305,11 @@ SWITCH fi_pidType
 CASE #HEATED_BED
   pid0_Autotune = fi_nType
 CASE #EXTRUDER0 
-  pid0_Autotune = fi_nType
+  pid1_Autotune = fi_nType
 CASE #EXTRUDER1 
-  pid0_Autotune = fi_nType
+  pid2_Autotune = fi_nType
 CASE #NOZZLE 
-  pid0_Autotune = fi_nType
+  pid3_Autotune = fi_nType
 DEFAULT 
 
 ENDSWITCH
@@ -346,13 +344,13 @@ DECL INT nVal
 SWITCH fi_pidType
 
 CASE #HEATED_BED
-   pid0_Ki = fi_nVal
+   pid0_SetKi = fi_nVal
 CASE #EXTRUDER0 
-   pid1_Ki = fi_nVal
-CASE #EXTRUDER0 
-   pid2_Ki = fi_nVal
+   pid1_SetKi = fi_nVal
+CASE #EXTRUDER1 
+   pid2_SetKi = fi_nVal
 CASE #NOZZLE 
-   pid3_Ki = fi_nVal
+   pid3_SetKi = fi_nVal
 DEFAULT 
 
 ENDSWITCH
@@ -414,11 +412,19 @@ SetTemperature(fi_pidType,fi_temp)
 WAIT SEC 1
 SetAutoTune(fi_pidType,fi_fast)
 
-WAIT FOR GetAutotuneBit(fi_pidType) == FALSE
+;Wait for the controller to report autotune has started, then for it to finish
+$TIMER[AUTOTUNE_TIMER] = -nAutotuneStartTimeout
+$TIMER_STOP[AUTOTUNE_TIMER] = FALSE
+WAIT FOR GetAutotuneBit(fi_pidType) OR $TIMER_FLAG[AUTOTUNE_TIMER]
+$TIMER_STOP[AUTOTUNE_TIMER] = TRUE
+
+IF GetAutotuneBit(fi_pidType) THEN
+   WAIT FOR GetAutotuneBit(fi_pidType) == FALSE
+ENDIF
 
 END
 
-GLOBAL DEF SetExtuderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
+GLOBAL DEF SetExtruderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
 REAL fi_Temp1,fi_Temp2
 
 SetTemperature(#EXTRUDER0,fi_Temp1)
@@ -455,13 +461,13 @@ CASE #EXTRUDER0
       RETURN FALSE
    ENDIF
 CASE #EXTRUDER1 
- IF ( (pid1_temp > (pid2_SetPoint-_nTol)) AND (pid1_temp < (pid2_SetPoint +_nTol)) )THEN
+ IF ( (pid2_temp > (pid2_SetPoint-_nTol)) AND (pid2_temp < (pid2_SetPoint +_nTol)) )THEN
       RETURN TRUE
    ELSE 
       RETURN FALSE
    ENDIF
 CASE #NOZZLE 
- IF ( (pid1_temp > (pid3_SetPoint-_nTol)) AND (pid1_temp < (pid3_SetPoint +_nTol)) )THEN
+ IF ( (pid3_temp > (pid3_SetPoint-_nTol)) AND (pid3_temp < (pid3_SetPoint +_nTol)) )THEN
       RETURN TRUE
    ELSE 
       RETURN FALSE
@@ -501,8 +507,8 @@ DECL INT fi_nVal,_nTemp
 BOOL _bFlag
 
 _bFlag = bspsControl
-WAIT FOR bProcessing==FALSE
 bSpsControl = FALSE
+WAIT FOR bProcessing==FALSE
 
 SWITCH fi_param
    
@@ -513,12 +519,7 @@ SWITCH fi_param
    CASE #PULSE_PER_REV
       stepper_pulsePerRev = fi_nVal
    CASE #JOG_SPEED  
-      IF fi_nVal<0 THEN 
-         _nTemp = 66536 + fi_nVal ; Could use Truncate16, bit needs testing
-          stepper_jogSpeed = _nTemp
-      ELSE
-         stepper_jogSpeed = fi_nVal
-      ENDIF
+      stepper_jogSpeed = ToUnsigned16(fi_nVal)
    CASE #JOG_ACCEL
      stepper_jogAccel = fi_nVal
    CASE #JOG_DECEL
@@ -586,6 +587,16 @@ RETURN stepper_alarm<>0
  ;stepper_AlarmSpare1     
  ;stepper_blankQSegment   
  ;stepper_AlarmSpare2     
+ENDFCT
+
+GLOBAL DEFFCT INT ToUnsigned16(fi_nVal:IN)
+;Two's complement encoding of a signed value for a 16 bit output
+DECL INT fi_nVal
+
+IF fi_nVal < 0 THEN
+   RETURN 65536 + fi_nVal
+ENDIF
+RETURN fi_nVal
 ENDFCT
 
 GLOBAL DEFFCT INT Truncate16(n:IN)
