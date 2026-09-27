@@ -424,7 +424,7 @@ ENDIF
 
 END
 
-GLOBAL DEF SetExtuderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
+GLOBAL DEF SetExtruderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
 REAL fi_Temp1,fi_Temp2
 
 SetTemperature(#EXTRUDER0,fi_Temp1)

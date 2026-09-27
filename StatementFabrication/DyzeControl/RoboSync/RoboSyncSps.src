@@ -173,6 +173,7 @@ IF ($PRO_STATE1 <> #P_FREE) THEN
       ENDIF
       
 		IF ($PRO_STATE1 == #P_STOP) THEN
+			bOverrideStepper = TRUE ;Stop extruding while the program is stopped
 			bRoboSyncInterrupt = TRUE
 		ENDIF
 	ELSE

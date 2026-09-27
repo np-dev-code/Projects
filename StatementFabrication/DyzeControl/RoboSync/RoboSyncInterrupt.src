@@ -30,7 +30,8 @@ IF StepperError() THEN
    bResetStepper = TRUE
 ENDIF 
 
-WAIT FOR stepperState==#RUNNING
+;Stepper only restarts if extruding, otherwise it is expected to stay stopped
+WAIT FOR (stepperState==#RUNNING) OR ((stepperState==#STOPPED) AND NOT bExtrude)
 
 
 bRoboSyncInterrupt = FALSE
