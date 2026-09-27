@@ -18,9 +18,9 @@ _rVolPerRev =  _rVolPerMM/_rRevsPerMM
 ;speed), as these are constant the calculation is done offline 60*4=240
 _rSpeed = rExtrusionConstant*(240*_rVolPerSec/_rVolPerRev)
 
-;Clamp to the positive range of the 16 bit jog speed register
-IF _rSpeed > 32767 THEN
-   _rSpeed = 32767
+;Clamp to the jog speed register range, 19200 = 4800 RPM
+IF _rSpeed > 19200 THEN
+   _rSpeed = 19200
 ENDIF
 IF _rSpeed < 0 THEN
    _rSpeed = 0

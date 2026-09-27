@@ -63,10 +63,17 @@ END
 GLOBAL DEF StartJog( fi_nVal:IN )
 DECL INT fi_nVal
 
+;Each opcode needs time to reach the drive before the next is written
 StepperOpcode(RESET_ALARM_CODE)
+WAIT SEC nStepperCmdDelay/1000.0
+
+SetStepperParam(#JOG_ACCEL,nJogAccel)
+SetStepperParam(#JOG_DECEL,nJogDecel)
 StepperOpcode(ENABLE_DRIVE)
+WAIT SEC nStepperCmdDelay/1000.0
 
 SetStepperParam(#JOG_SPEED,fi_nVal)
+WAIT SEC nStepperStartDelay/1000.0
 StepperOpcode(COMMENCE_JOGGING)
 
 END
