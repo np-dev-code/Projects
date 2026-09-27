@@ -17,7 +17,6 @@ DEF RoboSyncSps(   )
 ;              state machine, heater idle timeout, program state handling
 ;************************************************
 
-INT nAnswer; 
 DECL STATE_T E_stat
 DECL MODUS_T E_mode
 

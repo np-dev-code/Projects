@@ -199,7 +199,6 @@ GLOBAL DEFFCT INT GetPidKp (fi_pidType:IN)
 ; Returns : INT, 0..5000 = 0..500.0 %
 ; Notes   : Only valid while autotune is not running
 ;------------------------------------------------
-DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -230,7 +229,6 @@ GLOBAL DEF SetPidKp (fi_pidType:IN, fi_nVal:IN)
 ;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -256,7 +254,6 @@ GLOBAL DEFFCT INT GetPidKd (fi_pidType:IN)
 ; Returns : INT, 0..250 s
 ; Notes   : Only valid while autotune is not running
 ;------------------------------------------------
-DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -287,7 +284,6 @@ GLOBAL DEF SetPidKd (fi_pidType:IN, fi_nVal:IN)
 ;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -313,7 +309,6 @@ GLOBAL DEFFCT INT GetPidKi (fi_pidType:IN)
 ; Returns : INT, 0..3000 = 0.00..30.00 rep/min
 ; Notes   : Only valid while autotune is not running
 ;------------------------------------------------
-DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -372,7 +367,6 @@ GLOBAL DEFFCT REAL GetAlarmLimit (fi_pidType:IN)
 ; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
 ; Returns : REAL, degC
 ;------------------------------------------------
-DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -457,7 +451,6 @@ GLOBAL DEF SetPidKi (fi_pidType:IN, fi_nVal:IN)
 ;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -512,9 +505,7 @@ GLOBAL DEFFCT REAL GetSetTemperature (fi_pidType:IN)
 ; Returns : REAL, degC
 ; Notes   : Reads back the robot output word, not the controller
 ;------------------------------------------------
-REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
-INT _nVal
 
 SWITCH fi_pidType
 
@@ -549,7 +540,7 @@ GLOBAL DEF AutoTuneProcess(fi_pidType:IN,fi_temp:IN,fi_fast:IN)
 
 REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
-INT fi_fast, _nVal
+INT fi_fast
 
 
 SetAutotune(fi_pidType,AUTOTUNE_STOP)

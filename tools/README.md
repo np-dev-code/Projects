@@ -51,4 +51,5 @@ project in WorkVisual (or KUKA.OfficeLite) before deploying to a robot.
 Tests: `python -m unittest discover -s tools -p "test_*.py"`
 
 The GitHub workflow `.github/workflows/krl-lint.yml` runs the tests and the
-linter on every push or pull request that touches KRL files.
+linter (with `--strict`, so warnings also fail) on every push or pull
+request that touches KRL files.

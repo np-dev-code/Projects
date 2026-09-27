@@ -27,7 +27,7 @@ GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
 ;           Robot interpreter only (WAIT)
 ;------------------------------------------------
 DECL ENUM_STEPPER_PARAM fi_param
-DECL INT fi_nVal,_nTemp
+DECL INT fi_nVal
 BOOL _bFlag
 
 _bFlag = bspsControl
