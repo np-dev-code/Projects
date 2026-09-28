@@ -34,7 +34,7 @@ GLOBAL INT stepperSpeed = 0
 GLOBAL INT prevStepperSpeed = 0
 
 GLOBAL CONST INT STEPPER_TIMER=16
-GLOBAL INT nStepperTimeout = 200 ;ms allowed for the drive to act on reset/enable
+GLOBAL INT nStepperTimeout = 2000 ;ms allowed for the drive to reset, enable, start or stop
 GLOBAL BOOL bTimeoutError=FALSE
 
 GLOBAL CONST INT RETRACT_TIMER=17
