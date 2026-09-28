@@ -14,7 +14,75 @@ DEFDAT  RoboSyncMsgs PUBLIC
 ;     Version: 0.1.1
 ;************************************************
 
-;GLOBAL STRUC  int nNo, char strName[24], char strMsg[48],nBOOL bDisplayFlag
+DECL GLOBAL KRLMSGOPT_T E_progNotifyMsgOpt={VL_STOP FALSE,CLEAR_P_RESET FALSE,LOG_TO_DB TRUE}
+DECL GLOBAL KRLMSGOPT_T E_progCommonMsgOpt={VL_STOP TRUE,CLEAR_P_RESET FALSE,LOG_TO_DB TRUE}
+DECL GLOBAL KRLMSGOPT_T E_spsMsgOpt={VL_STOP FALSE,CLEAR_P_RESET FALSE,LOG_TO_DB TRUE}
 
+GLOBAL STRUC RSYNC_MSG_T  int nNo, char strName[24], char strMsg[48], BOOL bDisplayFlag
+
+
+DECL GLOBAL RSYNC_MSG_T  RoboSyncMsg[58]
+RoboSyncMsg[1]={nNo 1,strName[] "RoboSync",strMsg[] "Stepper has hit a position limit",bDisplayFlag FALSE}
+RoboSyncMsg[2]={nNo 2,strName[] "RoboSync",strMsg[] "Stepper has hit a ccw position limit.",bDisplayFlag FALSE}
+RoboSyncMsg[3]={nNo 3,strName[] "RoboSync",strMsg[] "Stepper has hit a  cw position limit.",bDisplayFlag FALSE}
+RoboSyncMsg[4]={nNo 4,strName[] "RoboSync",strMsg[] "Stepper is over Temperature.",bDisplayFlag TRUE}
+RoboSyncMsg[5]={nNo 5,strName[] "RoboSync",strMsg[] "Stepper has an internal Voltage Error.",bDisplayFlag FALSE}
+RoboSyncMsg[6]={nNo 6,strName[] "RoboSync",strMsg[] "Stepper has an over Voltage Error.",bDisplayFlag FALSE}
+RoboSyncMsg[7]={nNo 7,strName[] "RoboSync",strMsg[] "Stepper has an under Voltage Error.",bDisplayFlag FALSE}
+RoboSyncMsg[8]={nNo 8,strName[] "RoboSync",strMsg[] "Stepper is over current",bDisplayFlag FALSE}
+RoboSyncMsg[9]={nNo 9,strName[] "RoboSync",strMsg[] "Stepper has an open motor winding",bDisplayFlag FALSE}
+RoboSyncMsg[10]={nNo 10,strName[] "RoboSync",strMsg[] "Stepper has an encoder error",bDisplayFlag FALSE}
+RoboSyncMsg[11]={nNo 11,strName[] "RoboSync",strMsg[] "Stepper controller has a comms error",bDisplayFlag FALSE}
+RoboSyncMsg[12]={nNo 12,strName[] "RoboSync",strMsg[] "Stepper controller has a flash error",bDisplayFlag FALSE}
+RoboSyncMsg[13]={nNo 13,strName[] "RoboSync",strMsg[] "Stepper Motor can't move", bDisplayFlag FALSE}
+RoboSyncMsg[14]={nNo 14,strName[] "RoboSync",strMsg[] "stepper Controller has blank Q Segment",bDisplayFlag FALSE}
+
+RoboSyncMsg[15]={nNo 15,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Alarm 1",bDisplayFlag FALSE}
+RoboSyncMsg[16]={nNo 16,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Alarm 2",bDisplayFlag FALSE}
+RoboSyncMsg[17]={nNo 17,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Alarm 3",bDisplayFlag FALSE}
+RoboSyncMsg[18]={nNo 18,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Alarm 4",bDisplayFlag FALSE}
+RoboSyncMsg[19]={nNo 19,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Low PV conversion",bDisplayFlag FALSE}
+RoboSyncMsg[20]={nNo 20,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Negative conversion",bDisplayFlag FALSE}
+RoboSyncMsg[21]={nNo 21,strName[] "RoboSync",strMsg[] "Heatbed Pid0 high pv conversion",bDisplayFlag FALSE}
+RoboSyncMsg[22]={nNo 22,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Linear Limit",bDisplayFlag FALSE}
+RoboSyncMsg[23]={nNo 23,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Cable Resistance Error",bDisplayFlag FALSE}
+RoboSyncMsg[24]={nNo 24,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Zero out of range",bDisplayFlag FALSE}
+RoboSyncMsg[25]={nNo 25,strName[] "RoboSync",strMsg[] "Heatbed Pid0 Cold Junction",bDisplayFlag FALSE}
+
+RoboSyncMsg[26]={nNo 26,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Alarm 1",bDisplayFlag FALSE}
+RoboSyncMsg[27]={nNo 27,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Alarm 2",bDisplayFlag FALSE}
+RoboSyncMsg[28]={nNo 28,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Alarm 3",bDisplayFlag FALSE}
+RoboSyncMsg[29]={nNo 29,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Alarm 4",bDisplayFlag FALSE}
+RoboSyncMsg[30]={nNo 30,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Low PV conversion",bDisplayFlag FALSE}
+RoboSyncMsg[31]={nNo 31,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Negative conversion",bDisplayFlag FALSE}
+RoboSyncMsg[32]={nNo 32,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 high pv conversion",bDisplayFlag FALSE}
+RoboSyncMsg[33]={nNo 33,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Linear Limit",bDisplayFlag FALSE}
+RoboSyncMsg[34]={nNo 34,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Cable Resistance Error",bDisplayFlag FALSE}
+RoboSyncMsg[35]={nNo 35,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Zero out of range",bDisplayFlag FALSE}
+RoboSyncMsg[36]={nNo 36,strName[] "RoboSync",strMsg[] "Extruder0 Pid1 Cold Junction",bDisplayFlag FALSE}
+
+RoboSyncMsg[37]={nNo 37,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Alarm 1",bDisplayFlag FALSE}
+RoboSyncMsg[38]={nNo 38,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Alarm 2",bDisplayFlag FALSE}
+RoboSyncMsg[39]={nNo 39,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Alarm 3",bDisplayFlag FALSE}
+RoboSyncMsg[40]={nNo 40,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Alarm 4",bDisplayFlag FALSE}
+RoboSyncMsg[41]={nNo 41,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Low PV conversion",bDisplayFlag FALSE}
+RoboSyncMsg[42]={nNo 42,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Negative conversion",bDisplayFlag FALSE}
+RoboSyncMsg[43]={nNo 43,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 high pv conversion",bDisplayFlag FALSE}
+RoboSyncMsg[44]={nNo 44,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Linear Limit",bDisplayFlag FALSE}
+RoboSyncMsg[45]={nNo 45,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Cable Resistance Error",bDisplayFlag FALSE}
+RoboSyncMsg[46]={nNo 46,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Zero out of range",bDisplayFlag FALSE}
+RoboSyncMsg[47]={nNo 47,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Cold Junction",bDisplayFlag FALSE}
+
+RoboSyncMsg[48]={nNo 48,strName[] "RoboSync",strMsg[] "Nozzle Pid Alarm 1",bDisplayFlag FALSE}
+RoboSyncMsg[49]={nNo 49,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 2",bDisplayFlag FALSE}
+RoboSyncMsg[50]={nNo 50,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 3",bDisplayFlag FALSE}
+RoboSyncMsg[51]={nNo 51,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 4",bDisplayFlag FALSE}
+RoboSyncMsg[52]={nNo 52,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Low PV conversion",bDisplayFlag FALSE}
+RoboSyncMsg[53]={nNo 53, strName[] "RoboSync",strMsg[] "Nozzle Pid3 Negative conversion", bDisplayFlag FALSE}
+RoboSyncMsg[54]={nNo 54,strName[] "RoboSync",strMsg[] "Nozzle Pid3 high pv conversion", bDisplayFlag FALSE}
+RoboSyncMsg[55]={nNo 55,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Linear Limit", bDisplayFlag FALSE}
+RoboSyncMsg[56]={nNo 56,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Cable Resistance Error", bDisplayFlag FALSE}
+RoboSyncMsg[57]={nNo 57,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Zero out of range", bDisplayFlag FALSE}
+RoboSyncMsg[58]={nNo 58,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Cold Junction", bDisplayFlag FALSE}
 
 ENDDAT
