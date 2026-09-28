@@ -162,22 +162,3 @@ ENDIF
    
 END
 
-GLOBAL DEFFCT INT MessageBoxYesNo(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
-;------------------------------------------------
-; Name    : MessageBoxYesNo
-; Purpose : Show a No/Yes dialog with the message text
-; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message
-;           fin_nGroupNo (IN)  INT         : message number offset
-; Returns : INT, button answer from MsgDialog
-;------------------------------------------------
-
-DECL RSYNC_MSG_T fin_CNCRMsg
-DECL INT fin_nGroupNo
-
-DECL INT nAnswer
-nAnswer = 0
-MsgDialog(nAnswer,fin_CNCRMsg.strMsg[],fin_CNCRMsg.strName[],,,,,,,"No","Yes", FALSE, fin_nGroupNo + fin_CNCRMsg.nNo, E_spsMsgOpt)
-
-return nAnswer
-   
-ENDFCT

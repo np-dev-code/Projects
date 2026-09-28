@@ -42,9 +42,6 @@ IF (bPidError OR bStepperError) THEN
       CWRITE($CMD,E_stat,E_mode,"STOP 1")
 ENDIF
 
-;Operator messages for stepper and PID controller alarms
-RoboSyncMsgs()
-
 
 
 bProcessing = TRUE
@@ -129,10 +126,11 @@ SWITCH stepperState
              
              stepperState = #RETRACT
           ELSE   
-             StepperOpcode(STOP_JOGGING)         
-             StartStepperTimer()
-             stepperState = #STOPPING
+    
          ENDIF
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
        ENDIF      
        
        IF(bEnableStepper==FALSE)THEN
@@ -157,14 +155,12 @@ SWITCH stepperState
 
    CASE #STOPPING
       IF NOT(stepper_stopping) AND NOT(stepper_moving) THEN
-         $TIMER_STOP[STEPPER_TIMER]=TRUE
          stepperState = #STOPPED
-      ELSE
-         IF $TIMER_FLAG[STEPPER_TIMER] THEN
-            StepperOpcode(STOP_JOGGING)
-            stepperState = #ERROR
-            bTimeoutError = TRUE
-         ENDIF
+      ENDIF
+       IF $TIMER_FLAG[RETRACT_TIMER] THEN
+         $TIMER_STOP[RETRACT_TIMER]=TRUE
+         StepperOpcode(STOP_JOGGING)
+         stepperState = #ERROR
       ENDIF
    
    CASE #STOPPED
@@ -276,7 +272,7 @@ DEFFCT INT CalcStepperSpeed()
 ; Name    : CalcStepperSpeed
 ; Purpose : Extruder jog speed for the current robot speed
 ; Params  : -
-; Returns : INT, jog speed register value (rounded)
+; Returns : INT, jog speed register value
 ; Notes   : Uses the programmed $VEL.CP when the robot is stationary so
 ;           purging in place still extrudes
 ;------------------------------------------------

@@ -95,15 +95,11 @@ DECL INT fi_nVal
 
 ;Each opcode needs time to reach the drive before the next is written
 StepperOpcode(RESET_ALARM_CODE)
-WAIT SEC nStepperCmdDelay/1000.0
-
-SetStepperParam(#JOG_ACCEL,nJogAccel)
-SetStepperParam(#JOG_DECEL,nJogDecel)
+WAIT SEC 0.2
 StepperOpcode(ENABLE_DRIVE)
-WAIT SEC nStepperCmdDelay/1000.0
-
+WAIT SEC 0.2
 SetStepperParam(#JOG_SPEED,fi_nVal)
-WAIT SEC nStepperStartDelay/1000.0
+WAIT SEC 0.2
 StepperOpcode(COMMENCE_JOGGING)
 
 END
