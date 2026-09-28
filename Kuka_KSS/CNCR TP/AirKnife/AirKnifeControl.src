@@ -1,0 +1,72 @@
+&ACCESS RV
+&REL 9
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF AirKnifeControl( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.19.54
+;************************************************
+; Description: Routine to turn off the air knife
+;************************************************
+
+
+END
+
+GLOBAL DEF AirKnifeOn( )
+
+;Turn off signal to air knife
+bAirKnife = TRUE 
+
+END
+
+GLOBAL DEF AirKnifeOff( )
+
+;Turn off signal to air knife
+bAirKnife = FALSE
+
+END
+
+GLOBAL DEF AirBlast(period:IN,duty:IN,duration:IN)
+DECL INT duty
+DECL REAL period
+DECL REAL duration
+
+AIRBLAST_TIME = -duration * 1000
+nAirBlastPeriod = period * 1000
+nAirBlastOnTime = ((nAirBlastPeriod * duty) / 100)
+AIRBLASTON_TIME = -nAirBlastOnTime
+
+;Turn off signal to air knife
+bAirBlastStart = TRUE
+bAirBlastComp = FALSE
+bAirKnife = TRUE
+bAirBlastOn = TRUE
+
+END
+
+GLOBAL DEF PulseAirKnife(fin_rTime:IN)
+
+;Turn off signal to air knife
+REAL fin_rTime
+
+AirBlast(500, 1000, fin_rTime)
+
+
+END

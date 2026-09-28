@@ -1,0 +1,65 @@
+&ACCESS RVO
+&REL 118
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF BeaconSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.13.48
+;************************************************
+; Description: Sps to control the beacon.
+;************************************************
+
+
+; BEACON 
+; BLUE   = oBeaconBlue   -  Cell requires being made safe
+; WHITE  = oBeaconWhtie  -  AUTO OR EXTERNAL SELECTED
+; GREEN  = oBeaconGreen  -  PROGRAM RUNNING
+; ORANGE = oBeaconOrange -  FAULT CONDITION
+; RED    = oBeaconRed    -  E-STOP
+
+
+;Put in section for buzzer
+
+;Red light is active in an estop condition
+IF (systemState==#EMERGENCY_STOP)  THEN
+   oBeaconRed = TRUE
+ELSE
+   oBeaconRed = FALSE
+ENDIF
+
+;Blue light active unless in Auto or External and cell is safe for use
+IF ((($EXT OR $AUT) AND (NOT $PERI_RDY)) OR (($T1) OR ($T2))) THEN
+   oBeaconBlue = TRUE
+ELSE
+   oBeaconBlue = FALSE
+ENDIF
+
+;White light active if robot is in AUT or EXT mode
+IF (($AUT) OR ($EXT)) THEN
+   oBeaconWhite = TRUE		
+ELSE 
+   oBeaconWhite = FALSE
+ENDIF
+
+;Amber light active if a fault occurs in the inverter, air pressure drops or the door is open in auto or external
+IF ((systemState==#FAULT) OR (systemState==#DOOR_OPEN) OR bFaulted) THEN
+   oBeaconOrange = TRUE
+ELSE
+   oBeaconOrange = FALSE
+ENDIF
+
+;Green light active when a program is running
+IF ($PRO_STATE1 == #P_ACTIVE) THEN
+   oBeaconGreen = TRUE 
+ELSE 
+   oBeaconGreen = FALSE 
+ENDIF
+
+END

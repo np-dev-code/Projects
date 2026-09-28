@@ -1,0 +1,81 @@
+&ACCESS RVP
+&REL 12
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF SpindleWarmup( )
+DECL INT _i
+DECL INT _t
+DECL INT _nAnswer
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    GLOBAL INTERRUPT DECL 4 WHEN bSpindleInterrupt==TRUE DO SpindleInterrupt ( )
+
+    INTERRUPT ON 4
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.21.54
+;************************************************
+; Description: Routine to warm up the spindle
+;************************************************
+
+
+CheckEOATooling(#SPINDLE)
+
+_nAnswer = 0
+
+;Check with the user that a safe for warmup tool is in the spindle
+MsgDialog(_nAnswer,"Ensure the a safe for warmup tool is in the spindle, then press continue.","Spindle",,,,,,,"Exit","Continue", FALSE, nSpindleMsg + 6, E_progCommonMsgOpt)
+
+IF (_nAnswer == 1) THEN
+	_nAnswer = 0
+ELSE
+	RETURN
+ENDIF
+
+;set spindle speed to zero 
+nSpindleSpeed = 0 
+
+;Loop 5 times, incrementing speed at each loop
+FOR _i = 1 TO 5 
+  
+	;Increment spindle speed
+	nSpindleSpeed = nSpindleSpeed + 4000
+  
+	;Stop spindlle speed increasing past maximum level  
+	IF nSpindleSpeed > nSpindleMaxSpeed THEN
+		nSpindleSpeed = nSpindleMaxSpeed
+	ENDIF
+	  
+	;Turn spindle on
+	SpindleOn()
+  
+	;12 second timer
+	FOR _t = 1 to 120
+		WAIT SEC 1 
+	ENDFOR 
+ENDFOR
+  
+MsgNotify("Spindle warmup successfully completed.", "Spindle",,, nSpindleMsg + 7, E_progNotifyMsgOpt)
+
+;Turn spindle off
+SpindleOff()
+
+END
+
+
+
+

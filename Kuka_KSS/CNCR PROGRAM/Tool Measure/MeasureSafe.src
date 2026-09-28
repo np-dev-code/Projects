@@ -1,0 +1,41 @@
+&ACCESS RVO1
+&REL 19
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\Tool Measure
+DEF MeasureSafe( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.19.54
+;************************************************
+; Description: Program to move the robot to the
+; measure safe position.
+;************************************************
+DECL REAL _rYPos
+
+CheckEOATooling(#SPINDLE)
+
+_rYPos = XP3.Y - XP3.E1
+
+XP3.E1 = $POS_ACT.E1
+XP3.Y = XP3.E1 + _rYPos
+;FOLD PTP P3 Vel=20 % PDAT3 Tool[31]:NULL_SPINDLE Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P3; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=20; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT3
+FDAT_ACT = FP3
+BAS(#PTP_PARAMS, 20.0)
+SET_CD_PARAMS (0)
+PTP XP3
+;ENDFOLD
+;Move to safe position near the tool measure sensor
+
+
+END

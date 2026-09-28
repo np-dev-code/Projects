@@ -1,0 +1,130 @@
+&ACCESS  RV
+&REL 86
+DEFDAT  CNCRSIGNALS PUBLIC
+
+
+;BECKHOFF I/O
+;Digital Inputs
+;-------------Module 1-------------
+GLOBAL SIGNAL iAirOk $IN[1] ;Air ok pressure switch
+GLOBAL SIGNAL iInvOk $IN[2] ;Inverter ok from cabinet
+GLOBAL SIGNAL iInvRun $IN[3] ;Inverter running from cabinet
+GLOBAL SIGNAL iToolLocked $IN[4] ;tool locked from spindle 
+GLOBAL SIGNAL iOpenCollet $IN[5] ;collet open from spindle
+GLOBAL SIGNAL iSpindleThermal $IN[6] ;thermal alarm from spindle 
+GLOBAL SIGNAL iEstopSignal $IN[7] ;E-stop status from safety relay
+GLOBAL SIGNAL iDoorSignal $IN[8] ;Door status from safety relay
+GLOBAL SIGNAL iDrivesEnable $IN[9] ;door status from safety relay
+GLOBAL SIGNAL iAcknowledgeMessages $IN[10] ;Acknowledge messages from safety relay 
+GLOBAL SIGNAL iStart $IN[11] ;Operator station start button
+GLOBAL SIGNAL iStop $IN[12] ;Operator station stop button
+GLOBAL SIGNAL iEDMError $IN[13] ; External Device Monitoring error from safety relay
+GLOBAL SIGNAL iToolMeasureGood $IN[14]
+GLOBAL SIGNAL iToolMeasureLimit $IN[15]
+GLOBAL SIGNAL iSpindleRotation $IN[16]
+;-------------Module 3-------------
+GLOBAL SIGNAL iToolrackComplete $IN[17]
+GLOBAL SIGNAL iToolrackActive $IN[18]
+GLOBAL SIGNAL iToolrackOk $IN[19]
+GLOBAL SIGNAL iToolrackInPosition $IN[20]
+GLOBAL SIGNAL iToolrackReferenceValid $IN[21]
+GLOBAL SIGNAL iToolrackOpen $IN[22]
+GLOBAL SIGNAL iToolrackClosed $IN[23]
+GLOBAL SIGNAL iToolPresent $IN[24]
+GLOBAL SIGNAL iChillerRunning $IN[26]
+GLOBAL SIGNAL iChillerAlarm $IN[25]
+GLOBAL SIGNAL iLubeFeedback $IN[27]
+;GLOBAL SIGNAL !!SPARE!! $IN[28]
+;GLOBAL SIGNAL !!SPARE!! $IN[29]
+;GLOBAL SIGNAL !!SPARE!! $IN[30]
+;GLOBAL SIGNAL !!SPARE!! $IN[31]
+;GLOBAL SIGNAL !!SPARE!! $IN[32]
+;-------------Module 5-------------
+GLOBAL SIGNAL iRoofClosedL $IN[33]
+GLOBAL SIGNAL iRoofClosedR $IN[34]
+GLOBAL SIGNAL iRoofOpenL $IN[35]
+GLOBAL SIGNAL iRoofOpenR $IN[36]
+GLOBAL SIGNAL iSpindleOnRobot $IN[37]
+GLOBAL SIGNAL iCeadOnRobot $IN[38]
+GLOBAL SIGNAL iEOAUnlocked $IN[39]
+GLOBAL SIGNAL iEOALocked $IN[40]
+;GLOBAL SIGNAL !!SPARE!! $IN[41]
+GLOBAL SIGNAL iHoodUp $IN[42]
+GLOBAL SIGNAL iHoodDown $IN[43]
+;GLOBAL SIGNAL !!SPARE!! $IN[44]
+;GLOBAL SIGNAL !!SPARE!! $IN[45]
+;GLOBAL SIGNAL !!SPARE!! $IN[46]
+;GLOBAL SIGNAL !!SPARE!! $IN[47]
+;GLOBAL SIGNAL !!SPARE!! $IN[48]
+
+
+
+;Digital Outputs
+;-------------Module 2-------------
+GLOBAL SIGNAL oSpindleOn $OUT[1] ;Spindle on to safety relay
+GLOBAL SIGNAL oToolUnlock1 $OUT[2] ;Tool unlock 1
+GLOBAL SIGNAL oToolUnlock2 $OUT[3] ;Tool unlock 2
+;GLOBAL SIGNAL !!SPARE!! $OUT[4]
+GLOBAL SIGNAL oCoolantOn $OUT[5] ;Coolant on signal to safety relay
+GLOBAL SIGNAL oPressurise $OUT[6] ;cone clear for spindle
+;GLOBAL SIGNAL !!SPARE!! $OUT[7]
+;GLOBAL SIGNAL !!SPARE!! $OUT[8]
+GLOBAL SIGNAL oBeaconRed $OUT[9]
+GLOBAL SIGNAL oBeaconOrange $OUT[10]
+GLOBAL SIGNAL oBeaconGreen $OUT[11]
+GLOBAL SIGNAL oBeaconBlue $OUT[12]
+GLOBAL SIGNAL oBeaconWhite $OUT[13]
+GLOBAL SIGNAL oAirKnife $OUT[14]
+GLOBAL SIGNAL oProgramActive $OUT[15]
+;GLOBAL SIGNAL !!SPARE!! $OUT[16]
+
+;-------------Module 4-------------
+GLOBAL SIGNAL oToolrackEnable $OUT[17]
+GLOBAL SIGNAL oToolrackReset $OUT[18]
+GLOBAL SIGNAL oToolrackSet $OUT[19]
+GLOBAL SIGNAL oToolrackStart $OUT[20]
+GLOBAL SIGNAL oToolrackProgram $OUT[21]  TO $OUT[25]
+GLOBAL SIGNAL oMode0 $OUT[26]
+GLOBAL SIGNAL oMode1 $OUT[27]
+GLOBAL SIGNAL oMode $OUT[26]  TO $OUT[27]
+GLOBAL SIGNAL oTrackLubrication $OUT[28]
+GLOBAL SIGNAL oOpenToolrack $OUT[29]
+GLOBAL SIGNAL oCloseToolrack $OUT[30]
+;GLOBAL SIGNAL !!SPARE!! $OUT[31]
+;GLOBAL SIGNAL !!SPARE!! $OUT[32]
+
+;-------------Module 6-------------
+;GLOBAL SIGNAL !!SPARE!! $OUT[33]
+;GLOBAL SIGNAL !!SPARE!! $OUT[34]
+;GLOBAL SIGNAL !!SPARE!! $OUT[35]
+;GLOBAL SIGNAL !!SPARE!! $OUT[36]
+;GLOBAL SIGNAL !!SPARE!! $OUT[37]
+;GLOBAL SIGNAL !!SPARE!! $OUT[38]
+GLOBAL SIGNAL oEOAUnlock $OUT[39]
+GLOBAL SIGNAL oEOANotLock $OUT[40]
+;GLOBAL SIGNAL !!SPARE!! $OUT[41]
+GLOBAL SIGNAL oHoodUp $OUT[42]
+GLOBAL SIGNAL oHoodDown $OUT[43]
+;GLOBAL SIGNAL !!SPARE!! $OUT[44]
+;GLOBAL SIGNAL !!SPARE!! $OUT[45]
+;GLOBAL SIGNAL !!SPARE!! $OUT[46]
+;GLOBAL SIGNAL !!SPARE!! $OUT[47]
+;GLOBAL SIGNAL !!SPARE!! $OUT[48]
+
+;Flags
+GLOBAL SIGNAL oStartupFlag $OUT[4096] ;Startup flag
+
+;Analogue Outputs
+GLOBAL SIGNAL aoSpindleSpeed $ANOUT[1]
+
+;USER VARIABLES
+GLOBAL BOOL bAirFault=FALSE
+GLOBAL BOOL bChillerFault=FALSE
+GLOBAL BOOL bFaulted=FALSE
+GLOBAL BOOL bSpindleFault=FALSE
+GLOBAL BOOL bPressurise=TRUE
+GLOBAL CONST INT MAX_TOOL_NO=16
+GLOBAL FRAME Workpiece={X 1616.63306,Y 4728.73828,Z 856.230286,A -90.6330795,B 0.0403395109,C -0.164200619}
+GLOBAL FRAME Offset={X 0.0,Y 0.0,Z 20.0000,A 0.0,B 0.0,C -1.00000}
+GLOBAL FRAME tcpOffset={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0}
+ENDDAT

@@ -1,0 +1,34 @@
+&ACCESS RV
+&REL 4
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF PickUpCEAD( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+EOAChangeSafe()
+ToCEADSafe()
+AwayCEAD()
+
+AtCEAD()
+
+LockEOAChanger(#CEAD)
+
+AboveCEAD()
+
+AboveAndAwayCead()
+
+EOAChangeSafe()
+
+
+
+
+END

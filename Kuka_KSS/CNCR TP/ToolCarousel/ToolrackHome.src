@@ -1,0 +1,34 @@
+&ACCESS RVP4
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF ToolrackHome( )
+BOOL _bExitLoop
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: Program to home the tool changer
+;************************************************
+
+_bExitLoop = FALSE
+
+;Loop until motion is comlete.
+WHILE (NOT _bExitLoop)
+    IF (ToolRackProg (0)) THEN
+		nToolRackPosition = 1
+        _bExitLoop = TRUE
+    ENDIF
+ENDWHILE
+
+MsgNotify("Tool rack has been homed successfully.", "AutoToolChange",,, nAutoToolChangeMsg+8, E_progNotifyMsgOpt)
+
+;Tool rack position 1 is the default after tool rack has homed
+nToolRackPosition = 1
+
+END

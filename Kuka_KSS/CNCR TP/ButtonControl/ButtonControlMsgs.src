@@ -1,0 +1,40 @@
+&ACCESS RO
+&REL 6
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF ButtonControlMsgs( )
+; CNC ROBOTICS LTD submit programm
+;(Roboter SPS)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.15.48
+;************************************************
+; Description: sps for controlling messages, to
+;indicate to the user when the button is pressed.
+;************************************************
+
+DECL KrlMsg_t _msg
+DECL KrlMsgPar_t _msgPar[3]
+DECL KrlMsgOpt_t _msgOpt
+DECL INT _nhandle
+
+ _msg = {modul[] "CNCR", Nr 005, msg_txt[] "Operator stop pressed..."}
+
+
+;Message to warn when air pressure has been lost
+IF (iStop==FALSE) THEN 
+	IF (NOT bStopMessage) THEN
+      _nhandle = Set_KrlMsg (#notify, _msg, _msgPar[], _msgOpt)		
+      bStopMessage = TRUE	
+	ENDIF	
+ELSE	
+	 bStopMessage = FALSE
+ENDIF
+
+END

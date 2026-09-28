@@ -1,0 +1,211 @@
+&ACCESS RVO4
+&REL 10
+&PARAM DISKPATH = KRC:\R1\TP\CNCR TP\Schunk
+DEF EOAChangerControl( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.14.46
+;************************************************
+; Description: Programs for swapping the EOA tool.
+;************************************************
+
+END
+
+GLOBAL DEF SwapTool(newTool:IN)
+DECL EOA_TOOL_TYPE newTool
+;HomeRobot()
+
+HomePosition()
+;WAIT FOR NOT iEOAFault
+DropEOATool(ToolOnRobot)
+WAIT SEC 0
+nSchunkOKSwapAns = 0
+
+WHILE nSchunkOKSwapAns<>1
+  
+MsgDialog(nSchunkOKSwapAns,"Swap the tool balance clips to the new tool","Schunk",,,,,,,"Cancel","Continue", FALSE, nSchunkMsg, E_spsMsgOpt)
+
+ENDWHILE
+  
+PickUpEOATool(newTool)
+
+HomePosition()
+END
+
+GLOBAL DEF DropEOATool(tool:IN)
+DECL EOA_TOOL_TYPE tool
+
+;WAIT FOR NOT iEOAFault
+
+SWITCH tool
+   CASE #SPINDLE
+      
+      IF nToolHeld <> 0 THEN
+         ToolCheck()
+      ELSE
+         WAIT FOR (nToolHeld == 0) AND (NOT iToolLocked)
+      ENDIF
+      ToolRackClose()
+      DropSpindle()
+      bToolOnRobot = FALSE
+      
+   CASE #CEAD
+      
+      DropCead()
+      bToolOnRobot = FALSE
+       
+   CASE #NONE
+      EOAChangeSafe()
+     ; WAIT FOR iEOALocked AND NOT iEOAUnlocked
+      bToolOnRobot = FALSE
+ENDSWITCH  
+
+END
+
+GLOBAL DEF PickupEOATool(tool:IN)
+DECL EOA_TOOL_TYPE tool
+
+IF tool == #NONE THEN
+   RETURN
+ENDIF
+
+
+EOAChangeSafe()
+
+WAIT FOR NOT (iSpindleOnRobot OR iCeadOnRobot)
+
+SWITCH tool
+   CASE #SPINDLE
+      ;Move to spindle pick position
+      PickUpSpindle()
+      bToolOnRobot = TRUE
+   CASE #CEAD
+    
+      ;Move to Extruder pick position
+      PickUpCEAD()
+      ;halt
+      WAIT FOR iCeadOnRobot
+      IF NOT iNoEmergency THEN
+         PULSE(oAckErrors,TRUE,1)
+      ENDIF
+      bToolOnRobot = TRUE
+      ;Retract extruder from post
+
+      ;halt
+   CASE #NONE
+      
+ENDSWITCH     
+EOAChangeSafe()
+
+
+END
+
+GLOBAL DEF LockEOAChanger(tool:IN)
+DECL EOA_TOOL_TYPE tool
+
+WAIT FOR iAirOk
+
+oEOAUnlock = FALSE
+oEOANotLock = FALSE
+
+WAIT FOR NOT iEOAUnlocked
+
+IF tool <> #NONE THEN
+   WAIT FOR iEOALocked
+ENDIF
+
+IF tool == #CEAD THEN
+   WAIT FOR iCeadOnRobot
+      IF NOT iNoEmergency THEN
+         PULSE(oAckErrors,TRUE,1)
+      ENDIF
+ENDIF
+
+bToolOnRobot = TRUE AND (tool <> #NONE)
+toolOnRobot = tool
+
+WAIT SEC 1
+
+END
+
+GLOBAL DEF UnlockEOAChanger()
+
+WAIT FOR iAirOk
+
+bToolOnRobot = FALSE
+
+oEOANotLock = TRUE
+oEOAUnlock = TRUE
+
+WAIT FOR iEOAUnlocked AND NOT iEOALocked
+
+toolOnRobot = #NONE
+
+WAIT SEC 1
+
+END
+
+GLOBAL DEF SetNullTool(tool:IN)
+DECL EOA_TOOL_TYPE tool
+
+Switch tool
+   CASE #SPINDLE 
+      BAS(#TOOL, 31)
+   CASE #CEAD
+      BAS(#TOOL, 32)
+   CASE #NONE
+      BAS(#TOOL, 0)
+ENDSWITCH
+
+END
+
+
+GLOBAL DEF NullPTP(tool:IN, MoveTo:IN)
+DECL EOA_TOOL_TYPE tool
+DECL E6POS MoveTo
+
+BAS(#BASE, 0)
+
+SetNullTool(tool)
+
+
+BAS(#VEL_PTP,20)
+
+
+PTP MoveTo
+
+END
+
+GLOBAL DEFFCT BOOL CheckEOAinputs (tool:IN)
+DECL EOA_TOOL_TYPE tool
+
+SWITCH tool
+CASE #SPINDLE
+   RETURN iSpindleOnRobot
+CASE #CEAD
+   RETURN iCeadOnRobot
+CASE #NONE
+   RETURN NOT(iCeadOnRobot OR iSpindleOnRobot)
+ENDSWITCH
+
+
+ENDFCT
+
+GLOBAL DEF CheckEOATooling(tool:IN)
+DECL INT _nAns
+DECL EOA_TOOL_TYPE tool
+
+_nAns = 0
+
+WHILE ( (CheckEOAinputs(tool)) AND (toolOnRobot<>tool) )
+  
+MsgDialog(_nAns,"Incorrect EOA tooling. Cancel program and change EOA tooling","Schunk",,,,,,,,"Cancel", FALSE, nSchunkMsg, E_spsMsgOpt)
+
+ENDWHILE
+
+END

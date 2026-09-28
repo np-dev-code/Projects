@@ -1,0 +1,27 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 156
+DEFDAT  ROBOTSPS PUBLIC
+GLOBAL INT nHeartbeatTime=-1000
+
+;digital inputs 
+
+;GLOBAL SIGNAL iDrivesEnabled $IN[] ;drive engage from Pilz mapped directly by Auto External;
+;GLOBAL SIGNAL iAcknowledgeMessages $IN[] ;Acknowledge messages from Pilz mapped directly by Auto External 
+;GLOBAL SIGNAL iStart $IN[] ;operator start button
+;GLOBAL SIGNAL iStop $IN[] ;operator stop button 
+; 
+;GLOBAL SIGNAL oTeach $OUT[] ;T1 active to Pilz 
+
+
+GLOBAL ENUM SYSTEM_STATE EMERGENCY_STOP,DOOR_OPEN,FAULT,SYSTEM_OK,DRIVES_ON
+DECL GLOBAL SYSTEM_STATE systemState=#SYSTEM_OK
+DECL GLOBAL STATE_T E_stat
+DECL GLOBAL MODUS_T E_mode
+GLOBAL BOOL bDoorFault=FALSE
+GLOBAL BOOL bRobotHomed=TRUE
+
+ENDDAT

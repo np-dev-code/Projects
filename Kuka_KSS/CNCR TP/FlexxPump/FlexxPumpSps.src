@@ -1,0 +1,63 @@
+&ACCESS RVO
+&REL 182
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF FlexxPumpSps( )
+; CNC ROBOTICS LTD submit program
+;(Roboter SPS)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/12/23
+;     Version: 1.15.52
+;************************************************
+; Description: sps for controlling the Flexxpump 
+;              on Gudel Tracks
+;************************************************
+
+DECL KrlMsg_t _msg
+
+REAL _rCurrentTrackPosition
+
+_msg = {modul[] "CNCR", Nr 400, msg_txt[] "The Track Needs lubricating."}
+
+;Message to warn when air pressure has been lost
+IF (rTrackDistance>rMaxTrackDistance) THEN 
+	IF (NOT bTrackMessage) THEN 
+        MsgDialog(nLubeAns,"Maximum Track Distance Reached. Do you want to lubricate the track now.","Track",,,,,,,"No","Yes", FALSE, nTrackMsgs + 1, E_spsMsgOpt)
+        bTrackMessage = TRUE	
+	ENDIF	
+ELSE	
+	bTrackMessage = FALSE
+ENDIF
+
+IF nLubeAns == 1 THEN
+    PULSE ( oTrackLubrication ,TRUE, 2)
+    rTrackDistance = 0
+    bTrackMessage = FALSE
+    MsgNotify("Track Lubrication run. Ensure the robot is run on the extent of the track", "TRACK",,, nTrackMsgs + 2, E_progNotifyMsgOpt)
+    nLubeAns =0
+ENDIF
+
+IF nLubeAns == 2 THEN
+    MsgNotify("Track Lubrication Declined.", "TRACK",,, nTrackMsgs + 3, E_progNotifyMsgOpt)
+    nLubeAns =0
+ENDIF
+
+IF $TIMER_FLAG[TRACK_TIMER] THEN
+    $TIMER[TRACK_TIMER] = - nTrackCalcPeriod
+    _rCurrentTrackPosition = $AXIS_ACT.E1
+    rTrackDistance = rTrackDistance + ABS(_rCurrentTrackPosition - rPreviousTrackPosition)
+    rPreviousTrackPosition = _rCurrentTrackPosition
+ENDIF
+
+IF $TIMER_STOP[TRACK_TIMER]==TRUE THEN
+    $TIMER[TRACK_TIMER] = - nTrackCalcPeriod
+    $TIMER_STOP[TRACK_TIMER]= FALSE
+ENDIF
+
+END

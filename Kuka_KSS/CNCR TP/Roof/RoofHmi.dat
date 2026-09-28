@@ -1,0 +1,13 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 156
+DEFDAT  ROOFHMI PUBLIC
+
+GLOBAL BOOL bHmiRoofOpen=FALSE
+GLOBAL INT nHmiRoofOpenAns=0
+GLOBAL BOOL bHmiRoofClose=FALSE
+GLOBAL INT nHmiRoofCloseAns=0
+GLOBAL BOOL bRoofInterrupt=FALSE
+ENDDAT

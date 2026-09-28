@@ -1,0 +1,26 @@
+&ACCESS RV
+&REL 6
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF AirSensorInterrupt( )
+
+DECL INT _nAirFilter;
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.18.54
+;************************************************
+; Description: Interrup to control air pressure
+;              loss.
+;************************************************
+
+  BRAKE
+  
+  SensorWait(iAirOK,5,0.01)
+  bAirInterrupt = FALSE
+
+END

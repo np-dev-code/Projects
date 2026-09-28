@@ -1,0 +1,113 @@
+&ACCESS RV1
+&REL 82
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF TypeConversion( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.8.51
+;************************************************
+; Description: maths related source files
+;************************************************
+
+
+; An evolving collection of functions for manipulation of datatypes
+;
+
+END
+
+GLOBAL DEFFCT INT RealToInt(f:IN,select:in)
+
+DECL INT ofs
+DECL INT n, select
+DECL CHAR buf[4],buf2[4]
+DECL REAL f
+
+
+ofs=0
+cast_to(buf2[],ofs,f)
+
+
+SWITCH select
+   CASE 1
+      buf[1] = buf2[1]
+      buf[2] = buf2[2]
+      buf[3] = buf2[3]
+      buf[4] = buf2[4]
+   CASE 2
+      
+   DEFAULT
+      buf[1] = buf2[1]
+      buf[2] = buf2[2]
+      buf[3] = buf2[3]
+      buf[4] = buf2[4]
+      
+ENDSWITCH
+
+ofs=0
+cast_from(buf[],ofs,n)
+
+return n
+ENDFCT
+
+GLOBAL DEFFCT REAL IntToReal(n:in,select:in)
+
+DECL INT ofs
+DECL INT n, select
+DECL CHAR buf[4],buf2[4]
+DECL REAL f
+
+ofs=0
+cast_to(buf2[],ofs,n)
+
+
+SWITCH select
+   CASE 1
+      buf[1] = buf2[1]
+      buf[2] = buf2[2]
+      buf[3] = buf2[3]
+      buf[4] = buf2[4]
+   CASE 2
+      buf[1] = buf2[1]
+      buf[2] = buf2[4]
+      buf[3] = buf2[3]
+      buf[4] = buf2[2]
+   CASE 3
+      buf[1] = buf2[1]
+      buf[2] = buf2[4]
+      buf[3] = buf2[2]
+      buf[4] = buf2[3]
+   DEFAULT 
+      buf[1] = buf2[1]
+      buf[2] = buf2[2]
+      buf[3] = buf2[3]
+      buf[4] = buf2[4]
+      
+ENDSWITCH
+
+ofs=0
+cast_from(buf[],ofs,f)
+
+return f
+ENDFCT
+
+GLOBAL DEFFCT CHAR IntToChar(n:in )
+
+DECL INT ofs
+DECL INT n
+DECL CHAR buf[4]
+
+
+ofs=0
+cast_to(buf[],ofs,n)
+
+
+return buf[1]
+ENDFCT
+
+

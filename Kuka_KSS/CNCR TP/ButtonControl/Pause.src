@@ -1,0 +1,23 @@
+&ACCESS RVO
+&REL 5
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF Pause( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.15.48
+;************************************************
+; Description: Routine to turn on the spindle
+;************************************************
+
+WAIT SEC 0
+;Turn spindle on
+bPauseFlag =TRUE
+WAIT SEC 0
+
+END

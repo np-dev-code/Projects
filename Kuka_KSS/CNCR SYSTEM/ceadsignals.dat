@@ -1,0 +1,81 @@
+&ACCESS  RV
+&PARAM DISKPATH = System/CNCR System
+&REL 74
+DEFDAT  CEADSIGNALS PUBLIC
+
+;PROFINET I/O
+;Digital Inputs        
+GLOBAL SIGNAL iRotationOn $IN[513] ;Boolean to check if the rotation is on/active
+GLOBAL SIGNAL iHeatersOn $IN[514] ;Boolean to check if heating is on
+GLOBAL SIGNAL iCoolingOn $IN[515] ;Boolean to check if cooling is on 
+GLOBAL SIGNAL iTransportOn $IN[516] ;Boolean to see if the Transport on
+GLOBAL SIGNAL iBuzzerOn $IN[517] ;This boolean is high when the buzzer of the extruder is beeping (due to material shortage in extruder hopper)
+GLOBAL SIGNAL iReadyForUse $IN[518] ;This boolean is high when the extruder is ready for extrusion (all heatzones are around setpoint temperature and the warmup timer has finished counting) 
+GLOBAL SIGNAL iParkingAllowed $IN[519] ;This Boolean is high when the extruder is allowed to be disconnected
+GLOBAL SIGNAL iServoMissing $IN[520] ;This boolean is high when the extruder servo drive is not connected
+GLOBAL SIGNAL iServoError $IN[521] ;This boolean is high when the extruder servo drive has an error 
+GLOBAL SIGNAL iHeatZone1OverTemp $IN[522] ;This boolean is high when the extruder heatzone 1 overheated
+GLOBAL SIGNAL iHeatZone2OverTemp $IN[523] ;This boolean is high when the extruder heatzone 2 overheated 
+GLOBAL SIGNAL iHeatZone3OverTemp $IN[524] ;This boolean is high when the extruder heatzone 3 overheated
+GLOBAL SIGNAL iHeatZone4OverTemp $IN[525] ;This boolean is high when the extruder heatzone 4 overheated
+GLOBAL SIGNAL iHeatZone2UnderTemp $IN[526] ;This boolean is high when the extruder heatzone 2 too cold
+GLOBAL SIGNAL iHeatZone3UnderTemp $IN[527] ;This boolean is high when the extruder heatzone 3 too cold
+GLOBAL SIGNAL iHeatZone4UnderTemp $IN[528] ;This boolean is high when the extruder heatzone 4 too cold
+GLOBAL SIGNAL iPelletTransportError $IN[529] ;This boolean is high when the extruder runs to long without pellets in the hopper.
+GLOBAL SIGNAL iNoEmergency $IN[530] ;diagnostic bit to see if there is an emergency on the extruder side. Not for safety functions. 
+GLOBAL SIGNAL iExtruderHeating $IN[531] ;This boolean is high when the heatzones of the extruder are heating up
+GLOBAL SIGNAL iServoUtilization $IN[532] ;This boolean is high when the ulilization of the servo is more than 95%
+GLOBAL SIGNAL iServoTorque $IN[533] ;This boolean is high when the torque of the servo is more than 95%
+GLOBAL SIGNAL iTransportWarning $IN[534] ;This boolean is high when the two capacity sensors does not detect material for more than 60s, when the screw is rotating. The buzzer will also be activated.
+GLOBAL SIGNAL iEmptyPelletStorage $IN[535] ;This boolean is high when the capacity sensor in the base unit storage (if installed) does not detect any material
+GLOBAL SIGNAL iFilterCleaning $IN[536] ;This boolean is high when the amount of shots to clean the filter is exceeded.
+GLOBAL SIGNAL iOperatingModeWarning $IN[537] ;This boolean is high when the operating mode of the base unit is set to HMI
+GLOBAL SIGNAL iBed1HeatingEnabled $IN[538] ;This boolean is high when the heating is enabled for heated bed #1 (if installed)
+GLOBAL SIGNAL iBed2HeatingEnabled $IN[539] ;This boolean is high when the heating is enabled for heated bed #2 (if installed)
+GLOBAL SIGNAL iWarmUpTimer $IN[545]  TO $IN[560] ;This represents the seconds left before the extruder if fully heated, once the warmup timer is triggered(all four heaters within deviation) then rotation can be enabled.
+GLOBAL SIGNAL iScrewTorque $IN[561]  TO $IN[576] ;The screw torque percentage. 100% equals maximum torque
+GLOBAL SIGNAL iHeatZone1Temp $IN[577]  TO $IN[608] ;Value that represents the temperature of heatzone 1
+GLOBAL SIGNAL iHeatZone2Temp $IN[609]  TO $IN[640] ;Value that represents the temperature of heatzone 2
+GLOBAL SIGNAL iHeatZone3Temp $IN[641]  TO $IN[672] ;Value that represents the temperature of heatzone 3
+GLOBAL SIGNAL iHeatZone4Temp $IN[673]  TO $IN[704] ;Value that represents the temperature of heatzone 4
+GLOBAL SIGNAL iExtruderScrewSpeed $IN[705]  TO $IN[736] ;Value that represents the actual RPM of the screw
+GLOBAL SIGNAL iExtruderScrewUtil $IN[737]  TO $IN[768] ;Value the represents the utilization on the extruder servo.
+GLOBAL SIGNAL iExtruderScrewTorque $IN[769]  TO $IN[800] ;Value to represent the torque on the screw. Typical value depends on the servo type and the gearbox fitted.
+GLOBAL SIGNAL iBed1AverageTemp $IN[801]  TO $IN[832] ;Value that represents the average temperature of all heatzones of heated bed 1 (if installed)
+GLOBAL SIGNAL iBed2AverageTemp $IN[833]  TO $IN[864] ;Value that represents the average temperature of all heatzones of heated bed 2 (if installed)
+
+;Digital Outputs       
+GLOBAL SIGNAL oRotationOn $OUT[513] ;Boolean to turn heating on or off. When an error occurs the extruder will turn off the heating. When the error is resolved the heating will only be started again if this boolean is turned off and on, because rising edge detection is used.
+GLOBAL SIGNAL oHeatersOn $OUT[514] ;Boolean to turn extruder heating on or off. When an error occurs the extruder will turn off the heating. When the error is resolved the heating will only be started again if this boolean is turned off and on, because rising edge detection is used.
+GLOBAL SIGNAL oTransportOn $OUT[515] ;Boolean to turn pellet transport on or off. 
+GLOBAL SIGNAL oEmptyHopperBypass $OUT[516] ;This Boolean can be used to bypass the alarm of an empty hopper. Typically this is done when material is changed and the extruder needs to run empty for a short period
+GLOBAL SIGNAL oFilterReset $OUT[517] ;This value needs to show a rising edge when the filter has been changed or cleaned. 
+GLOBAL SIGNAL oStopBuzzer $OUT[518] ;To stop the buzzer this boolean needs to have an rising edge. The stop buzzer button on the HMI also still works
+GLOBAL SIGNAL oStartBuzzer $OUT[519] ;This bit can be used to alert the operator. The buzzer can be turned off with a button on the HMI: "Stop buzzing" or with the previous bit 46.1 Stop buzzer
+GLOBAL SIGNAL oBuzzOnEmpty $OUT[520] ;The buzzer alarm for an empty storage can be put on or off with this boolean
+GLOBAL SIGNAL oParkingRequest $OUT[521] ;This bit must be set when the extruder cables will be disconnected. Cables can are only allowed to be disconnected when the receive "allowed to park" bit is high.
+GLOBAL SIGNAL oBedHeater1 $OUT[522] ;Boolean to turn bed 1 heating on or off. When an error occurs the extruder will turn off the heating. When the error is resolved the heating will only be started again if this boolean is turned off and on, because rising edge detection is used
+GLOBAL SIGNAL oBedHeater2 $OUT[523] ;Boolean to turn bed 2 heating on or off. When an error occurs the extruder will turn off the heating. When the error is resolved the heating will only be started again if this boolean is turned off and on, because rising edge detection is used.
+GLOBAL SIGNAL oAckErrors $OUT[524] ;If an error occured there needs to be a form of acknowledgement. This boolean is used for the acknowledgement of the error. If the error is no longer present the acknowledgement will remove the error from the alarm list piston back
+GLOBAL SIGNAL oReverseExtruder $OUT[525] ;Reverse the direction of the extruder screw
+GLOBAL SIGNAL oChangePelletSource $OUT[529]  TO $OUT[544] ;This value determines from which pellet source, pellets are being shot to the extruder. 0 = internal cabinet, 1 = dryer, 2 & 3 = (optional dryer 2 and 3)
+GLOBAL SIGNAL oPumpTime $OUT[545]  TO $OUT[576] ;The time of the transport air pump to run, when the request for transport is high (default =25)
+GLOBAL SIGNAL oShotSize $OUT[577]  TO $OUT[608] ;The time for the pinch valve under the pellet storage to open (default =2.5)
+GLOBAL SIGNAL oHeatZone1Set $OUT[609]  TO $OUT[640] ;Float value for temperature of first heatzone
+GLOBAL SIGNAL oHeatZone2Set $OUT[641]  TO $OUT[672] ;Float value for temperature of second heatzone
+GLOBAL SIGNAL oHeatZone3Set $OUT[673]  TO $OUT[704] ;Float value for temperature of third heatzone
+GLOBAL SIGNAL oHeatZone4Set $OUT[705]  TO $OUT[736] ;Float value for temperature of fourth heatzone
+GLOBAL SIGNAL oScrewSet_rpm $OUT[737]  TO $OUT[768] ;The setpoint of the screw RPM. Maximum changes to 100 when 1:30 gearbox is used instead of 1:20
+GLOBAL SIGNAL oBed1Set $OUT[769]  TO $OUT[800] ;Float value for temperature setpoint of bed 1
+GLOBAL SIGNAL oBed2Set $OUT[801]  TO $OUT[832] ;Float value for temperature setpoint of bed 2
+
+;USER VARIABLES
+GLOBAL BOOL bHeatZone1OverTemp=FALSE
+GLOBAL BOOL bHeatZone2OverTemp=FALSE
+GLOBAL BOOL bHeatZone3OverTemp=FALSE
+GLOBAL BOOL bHeatZone4OverTemp=FALSE
+GLOBAL BOOL bHeatZone2UnderTemp=FALSE
+GLOBAL BOOL bHeatZone3UnderTemp=FALSE
+GLOBAL BOOL bHeatZone4UnderTemp=FALSE
+
+ENDDAT

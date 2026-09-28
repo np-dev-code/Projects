@@ -1,0 +1,28 @@
+&ACCESS RVO1
+&REL 18
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF SeekError( )
+DECL MODUS_T m
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: Program path for if the measure 
+; sensor limit is triggered.
+;************************************************
+
+BRAKE
+
+;Stop the program from continuing
+LOOP
+   MsgQuit("Error, the measure sensor limit has been tripped!", "ToolMeasuring",,,nMeasureMsg + 11, E_progCommonMsgOpt)
+   HALT
+ENDLOOP
+
+END

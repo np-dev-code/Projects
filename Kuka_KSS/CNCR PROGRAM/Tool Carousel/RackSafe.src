@@ -1,0 +1,66 @@
+&ACCESS RVO6
+&REL 13
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\Tool Carousel
+DEF RackSafe( )
+DECL REAL _rYPos
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;REAL _rXPos
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.19.54
+;************************************************
+; Description: Program to move robot to a safe
+; position near the tool changer
+;************************************************
+
+
+CheckEOATooling(#SPINDLE)
+
+;PTP $POS_ACT
+
+_rYPos = XP1.Y - XP1.E1
+
+XP1.E1 = $POS_ACT.E1
+XP1.Y = XP1.E1 + _rYPos
+
+
+XP1.E1= $POS_ACT.E1
+
+;Check Tool Change can occur
+WAIT FOR XP1.E1 > 1995
+
+;Move robot to the rack safe position
+;FOLD PTP P1 Vel=30 % PDAT1 Tool[31]:NULL_SPINDLE Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=30; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = FP1
+BAS(#PTP_PARAMS, 30.0)
+SET_CD_PARAMS (0)
+PTP XP1
+;ENDFOLD
+
+;Set flag that the robot is in a safe position by the tool rack
+bRackSafe = TRUE
+
+MsgNotify("Robot has reached the rack safe position...", "AutoToolChange",,, nAutoToolChangeMsg, E_progNotifyMsgOpt)
+
+END

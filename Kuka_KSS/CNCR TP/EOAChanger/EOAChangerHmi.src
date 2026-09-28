@@ -1,0 +1,49 @@
+&ACCESS RVO1
+&REL 22
+&COMMENT USER specified PLC program
+DEF  EOAChangerHmi ( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.23.48
+;************************************************
+; Description: sps for controlling the hmis
+;************************************************
+  
+;Next Section only available without program selected
+IF ($PRO_STATE1 == #P_FREE) THEN
+
+   ;If swap is pressed, call the SwapTool() routine
+   IF (bHmiSchunkSwap) THEN
+      
+      Switch nHmiToolSelect
+      CASE 1 
+         MsgDialog(nHmiSchunkSwapAns,"You are about to Pick Up the Spindle, Do you wish to continue","Schunk",,,,,,,"Cancel","Continue", FALSE, nSchunkMsg, E_spsMsgOpt)
+          toolSelect = #SPINDLE
+      CASE 2
+         MsgDialog(nHmiSchunkSwapAns,"You are about to Pick Up the CEAD Extruder, Do you wish to continue","Schunk",,,,,,,"Cancel","Continue", FALSE, nSchunkMsg, E_spsMsgOpt)
+         toolSelect = #CEAD
+      CASE 0
+          MsgDialog(nHmiSchunkSwapAns,"You are about to Drop Off any End Of Arm Tools, Do you wish to continue","Schunk",,,,,,,"Cancel","Continue", FALSE, nSchunkMsg, E_spsMsgOpt)
+          toolSelect = #NONE
+      ENDSWITCH
+
+     bHmiSchunkSwap = FALSE
+   ENDIF
+   
+    IF (nHmiSchunkSwapAns==1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/ChangeTool()")
+       CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiSchunkSwapAns=0
+    ENDIF
+    
+    
+    
+   
+ENDIF 
+    
+END

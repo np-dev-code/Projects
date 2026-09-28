@@ -1,0 +1,24 @@
+&ACCESS RVO
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF ChillerReset( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.14.46
+;************************************************
+; Description: Routine to turn on the spindle
+;************************************************
+IF bRequestChiller == TRUE THEN
+    bRequestChiller = FALSE
+    WAIT FOR oCoolantOn==FALSE
+ENDIF
+bChillerMessage = FALSE
+bChillerFault = FALSE
+ChillerOn()
+END

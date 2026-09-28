@@ -1,0 +1,20 @@
+&ACCESS RVP
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF MaterialChange( )
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.4.51
+;************************************************
+; Description: Program to change the material to
+; print with
+;************************************************
+
+ChangeMaterial(PETG30)
+
+END

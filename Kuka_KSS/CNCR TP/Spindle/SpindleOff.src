@@ -1,0 +1,34 @@
+&ACCESS RVO4
+&REL 20
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF SpindleOff( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.22.46
+;************************************************
+; Description: Routine to turn off the spindle
+;************************************************
+
+WAIT SEC 0
+
+CheckEOATooling(#SPINDLE)
+
+;Set spindle speed to 0
+nSpindleSpeed = 0
+
+;Turn off spindle
+bRequestSpindle = FALSE
+
+
+;Wait for inverter not running
+WAIT FOR  (NOT iInvRun)
+
+MsgNotify("Spindle stopped...", "Interrupt",,, nSpindleMsg + 4, E_progNotifyMsgOpt)
+
+END

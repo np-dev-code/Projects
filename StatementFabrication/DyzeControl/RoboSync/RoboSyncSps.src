@@ -12,9 +12,11 @@ DEF RoboSyncSps(   )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncSps
+;     Purpose: Background logic, call from sps.sub: error stop, stepper
+;              state machine, heater idle timeout, program state handling
 ;************************************************
 
-INT nAnswer; 
 DECL STATE_T E_stat
 DECL MODUS_T E_mode
 
@@ -31,22 +33,23 @@ ENDIF
 
 ;STOP IF anything is in error
 
-bStepperError = StepperError() OR bTimeourError
+bStepperError = StepperError() OR bTimeOutError
 bPidError = PidError(#EXTRUDER0) OR PidError(#EXTRUDER1)
 
+;If it is in error it will continually stop the program
+;won't allow it continue with an error
 IF (bPidError OR bStepperError) THEN
-   IF NOT bErrorStopSent THEN
       CWRITE($CMD,E_stat,E_mode,"STOP 1")
-      bErrorStopSent = TRUE
-   ENDIF
-ELSE
-   bErrorStopSent = FALSE
 ENDIF
+
+;Operator messages for stepper and PID controller alarms
+RoboSyncMsgs()
 
 
 
 bProcessing = TRUE
 IF bSpsControl == TRUE THEN
+   
 SWITCH stepperState
    
    CASE #NOT_INITIALISED
@@ -55,49 +58,61 @@ SWITCH stepperState
       ENDIF   
       
    CASE #RESET
-         bResetStepper = FALSE
-         StepperOpcode(RESET_ALARM_CODE)
-         stepperState = #RESETTING
-         
-         $TIMER[STEPPER_TIMER]=-nStepperTimeout
-         $TIMER_STOP[STEPPER_TIMER]=FALSE
-         
+      bResetStepper = FALSE
+      StepperOpcode(RESET_ALARM_CODE)
+      
+      stepperState = #RESETTING
+      StartStepperTimer()  
+      
    CASE #RESETTING
-      IF (stepper_fault==FALSE) THEN
+     IF (stepper_fault==FALSE) THEN
          StepperOpcode(ENABLE_DRIVE)
-         $TIMER[STEPPER_TIMER]=-nStepperTimeout
-         $TIMER_STOP[STEPPER_TIMER]=FALSE
-         bTimeourError = FALSE
+         StartStepperTimer()
          stepperState = #ENABLED 
       ENDIF
       IF $TIMER_FLAG[STEPPER_TIMER] THEN
+         StepperOpcode(STOP_JOGGING)
          stepperState = #ERROR 
-         bTimeourError = TRUE
-         $TIMER_STOP[STEPPER_TIMER]=TRUE
+         bTimeoutError = TRUE
       ENDIF
       
    CASE #ENABLED
-        IF (stepper_enabled) THEN
-            StepperOpcode(COMMENCE_JOGGING)
-            $TIMER_STOP[STEPPER_TIMER]=TRUE
-            stepperState = #RUNNING
-        ELSE
+      IF stepper_enabled THEN
+         $TIMER_STOP[STEPPER_TIMER]=TRUE
+         stepperState = #STOPPED
+      ELSE
            IF $TIMER_FLAG[STEPPER_TIMER] THEN
+              StepperOpcode(STOP_JOGGING)
               stepperState = #ERROR 
-              bTimeourError = TRUE
-              $TIMER_STOP[STEPPER_TIMER]=TRUE
+              bTimeoutError = TRUE
            ENDIF
-        ENDIF
+      ENDIF
+
+   CASE #STARTING
+      ;Jog speed was written on entry, give it time to reach the drive
+      ;before commencing jogging
+      IF stepper_jogging THEN
+           stepperState = #RUNNING
+      ENDIF      
+      
+      IF bEnableStepper AND bExtrude AND NOT(bOverrideStepper) THEN
+         IF $TIMER_FLAG[STEPPER_TIMER] THEN
+            StepperOpcode(STOP_JOGGING)
+            stepperState = #ERROR 
+            bTimeoutError = TRUE
+           
+         ENDIF
+       ELSE
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
+      ENDIF
 
    CASE #RUNNING
       
        IF bExtrude AND NOT(bOverrideStepper) THEN
 
-          IF $VEL_ACT < 0.001 THEN
-            stepperSpeed = RoboSyncSpeed( $VEL.CP )
-          ELSE
-            stepperSpeed = RoboSyncSpeed( $VEL_ACT )
-          ENDIF
+          stepperSpeed = CalcStepperSpeed()
               
           IF stepperSpeed <> prevStepperSpeed THEN
             stepper_jogSpeed = stepperSpeed  
@@ -108,56 +123,77 @@ SWITCH stepperState
        
          IF NOT (bOverrideStepper) AND bEnableRetract THEN
              stepper_jogSpeed = ToUnsigned16(-nRetractSpeed)
-             prevStepperSpeed = -1 ;Force extrude speed to be rewritten
+             prevStepperSpeed = 0 ;Force extrude speed to be rewritten
              $TIMER[RETRACT_TIMER]=-nRetractTime
              $TIMER_STOP[RETRACT_TIMER]=FALSE
              
              stepperState = #RETRACT
           ELSE   
-             StepperOpcode(STOP_JOGGING)
+             StepperOpcode(STOP_JOGGING)         
+             StartStepperTimer()
              stepperState = #STOPPING
          ENDIF
- 
        ENDIF      
        
        IF(bEnableStepper==FALSE)THEN
-          StepperOpcode(STOP_JOGGING)
-          stepperState = #STOPPING
+           StepperOpcode(STOP_JOGGING)         
+           StartStepperTimer()
+           stepperState = #STOPPING
        ENDIF
        
         IF(bStepperError)THEN
           StepperOpcode(STOP_JOGGING)
-          stepperState = #ERROR
+          stepperState = #ERROR 
         ENDIF
         
    CASE #RETRACT
-         IF $TIMER_FLAG[RETRACT_TIMER] THEN
-         StepperOpcode(STOP_JOGGING)
-         stepperState = #STOPPING
+      IF $TIMER_FLAG[RETRACT_TIMER] THEN
          $TIMER_STOP[RETRACT_TIMER]=TRUE
+         
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
       ENDIF
-        
+
    CASE #STOPPING
-      IF NOT ((stepper_moving) OR (stepper_stopping)) THEN
+      IF NOT(stepper_stopping) AND NOT(stepper_moving) THEN
+         $TIMER_STOP[STEPPER_TIMER]=TRUE
          stepperState = #STOPPED
+      ELSE
+         IF $TIMER_FLAG[STEPPER_TIMER] THEN
+            StepperOpcode(STOP_JOGGING)
+            stepperState = #ERROR
+            bTimeoutError = TRUE
+         ENDIF
       ENDIF
    
    CASE #STOPPED
       IF bEnableStepper AND bExtrude AND NOT(bOverrideStepper) THEN
-         prevStepperSpeed = -1 ;Force extrude speed to be rewritten
+         ;Set the jog speed to zero, the speed will be set when running
+         stepper_jogSpeed = 0
+         prevStepperSpeed = 0
+         
          StepperOpcode(COMMENCE_JOGGING)
-         stepperState = #RUNNING
+         StartStepperTimer()
+         stepperState = #STARTING
       ENDIF
-   CASE #ERROR
-         IF NOT (stepper_moving) and stepper_enabled THEN
-            StepperOpcode(DISABLE_DRIVE)
-         ENDIF
-         IF bResetStepper THEN
-            stepperState = #RESET
-         ENDIF
 
+   CASE #ERROR
+      ;Disable the drive once, after the stop command has had time to act.
+      ;The stopped timer marks that the disable has been sent.
+      IF ($TIMER_STOP[STEPPER_TIMER]==FALSE) THEN
+         $TIMER_STOP[STEPPER_TIMER]=TRUE
+      ENDIF
+      IF NOT (stepper_moving) and stepper_enabled THEN
+            StepperOpcode(DISABLE_DRIVE)
+      ENDIF
+      IF bResetStepper THEN
+         stepperState = #RESET
+      ENDIF
 ENDSWITCH
+
 ENDIF
+      
 bProcessing = FALSE
 
 IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
@@ -217,3 +253,43 @@ ELSE
 ENDIF
 
 END
+
+
+DEF StartStepperTimer()
+;------------------------------------------------
+; Name    : StartStepperTimer
+; Purpose : Restart STEPPER_TIMER, $TIMER_FLAG goes TRUE after nStepperTimeout
+; Params  : -
+; Returns : -
+;------------------------------------------------
+;Restart the stepper timer, $TIMER_FLAG goes TRUE after fi_nTime ms
+
+ $TIMER[STEPPER_TIMER]=-nStepperTimeout
+ $TIMER_STOP[STEPPER_TIMER]=FALSE
+ bTimeoutError = FALSE
+
+END
+
+
+DEFFCT INT CalcStepperSpeed()
+;------------------------------------------------
+; Name    : CalcStepperSpeed
+; Purpose : Extruder jog speed for the current robot speed
+; Params  : -
+; Returns : INT, jog speed register value (rounded)
+; Notes   : Uses the programmed $VEL.CP when the robot is stationary so
+;           purging in place still extrudes
+;------------------------------------------------
+;Extruder jog speed for the current robot speed, uses the programmed
+;speed when stationary so purging in place still extrudes
+INT _nSpeed
+REAL _rSpeed
+IF $VEL_ACT < 0.001 THEN
+   _rSpeed = RoboSyncSpeed($VEL.CP)
+ELSE
+  _rSpeed = RoboSyncSpeed($VEL_ACT)
+ENDIF
+_nSpeed = _rSpeed
+
+RETURN _nSpeed
+ENDFCT

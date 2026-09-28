@@ -1,0 +1,93 @@
+&ACCESS RVO
+&REL 235
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF CeadHmi(   )
+DECL INT i
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.5.51
+;************************************************
+; Description: sps control specific for the HMI 
+; related to the CEAD Extruder.
+;************************************************
+
+IF iRotationOn THEN
+   rHmiPrintSpeed = $VEL_ACT * 1000
+ELSE
+   rHmiPrintSpeed = 0
+ENDIF
+
+MT.nNoOfTests = 0
+MT.rSumOfValues = 0.0
+
+FOR i = 1 TO 10
+   IF (rMTRPM[i] > 0) AND (MT.rDensity <> 0) AND (MT.rTestTime <> 0) AND (rMTRPM[i] <> 0) THEN
+      MT.nNoOfTests = MT.nNoOfTests + 1
+      MT.rSumOfValues = MT.rSumOfValues + ((1000 * rMTWeight[i] / MT.rDensity) / MT.rTestTime) / rMTRPM[i]      
+   ENDIF
+ENDFOR
+
+IF (MT.nNoOfTests > 0) AND (MT.nNoOfTests <> 0) THEN
+   MT.rMaterialConstant = MT.rSumOfValues / MT.nNoOfTests
+ENDIF
+
+IF (nMTTestNumber <> nMTPrevTestNumber) AND (MT.rDensity <> 0) AND (MT.rTestTime <> 0) AND (rMTRPM[nMTTestNumber] <> 0) THEN
+   rMTVolume = (1000 * rMTWeight[nMTTestNumber] / MT.rDensity)
+   rMTVolPerSec = rMTVolume / MT.rTestTime
+   IF rMTRPM[nMTTestNumber] > 0 THEN
+      rMTVolPerSecPerRPM = rMTVolPerSec / rMTRPM[nMTTestNumber]
+   ENDIF
+   nMTPrevTestNumber = nMTTestNumber
+ENDIF
+
+IF $PRO_STATE1 <> #P_FREE THEN
+   bHmiHeaters=FALSE
+   bHmiRotation=FALSE
+   bHmiTransport=FALSE
+ENDIF
+
+IF $PRO_STATE1 == #P_FREE THEN
+   
+   IF bHmiSpeed0 THEN
+      rScrewSet_rpm = 0
+      bHmiSpeed0 = FALSE
+   ENDIF
+   
+   IF bHmiSetSpeed THEN
+      rScrewSet_rpm = rHmiExtruderSetSpeed
+      bHmiSetSpeed = FALSE
+   ENDIF
+
+   IF (bHmiPurge) THEN
+      MsgDialog(nHmiPurgeAns,"This program will move to purge position and purge the extruder.","CEAD",,,,,,,"Cancel","Continue", FALSE, nRobotMsg, E_spsMsgOpt)
+      bHmiPurge = FALSE
+   ENDIF
+    
+   IF (nHmiPurgeAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/Purge()")
+       CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiPurgeAns = 0
+   ENDIF
+   
+   IF (bHmiSystemPurge) THEN
+      MsgDialog(nHmiSystemPurgeAns,"This program will fully purge the material from the extruder.","CEAD",,,,,,,"Cancel","Continue", FALSE, nRobotMsg, E_spsMsgOpt)
+      bHmiSystemPurge = FALSE
+   ENDIF
+    
+   IF (nHmiSystemPurgeAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/SystemPurge()")
+       CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiSystemPurgeAns = 0
+   ENDIF
+   
+ENDIF
+
+
+END

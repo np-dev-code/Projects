@@ -1,0 +1,27 @@
+&ACCESS RVO
+&REL 162
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF SignallingSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.14.48
+;************************************************
+; Description: sps to User Signalling features.
+;              This included the Msgs and beacon 
+;              or light strip
+;************************************************
+LOOP
+	AirSensorMsgs()
+	BeaconSps()
+	CeadMsgs()
+	SpindleMsgs()
+	ChillerMsgs()
+ENDLOOP
+END

@@ -1,0 +1,32 @@
+&ACCESS RVO1
+&REL 28
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF SensorWait(_bInput:OUT, _rMaxTime:IN, _rStep:IN)
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.8.51
+;************************************************
+; Description: Filter on input, passed in by
+; reference
+;************************************************
+
+DECL INT _nFilter, _nMaxFilter
+DECL REAL _rMaxTime, _rStep
+DECL BOOL _bInput
+
+_nMaxFilter= _rMaxTime/_rStep
+_nFilter=0
+WHILE( _nFilter<_nMaxFilter )
+    IF(_bInput) THEN
+       _nFilter = _nFilter + 1
+    ELSE
+       _nFilter = 0
+    ENDIF
+    WAIT SEC 0.1
+ENDWHILE
+END

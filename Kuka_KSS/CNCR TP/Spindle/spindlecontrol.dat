@@ -1,0 +1,31 @@
+&ACCESS  RV
+&PARAM DISKPATH = TP/CNCR TP/Spindle
+&REL 8
+DEFDAT  SPINDLECONTROL PUBLIC
+
+
+;The following must be mapped to the CNCRSignals.dat
+;digital inputs 
+;GLOBAL SIGNAL iInvOK $IN[2] ;inverter ok from cabinet
+;GLOBAL SIGNAL iInvRun $IN[3] ;inverter running from cabinet
+;digital outputs
+;GLOBAL SIGNAL oSpindleOn $OUT[1] ;Spindle on to Pilz
+;analog outputs
+;GLOBAL SIGNAL aoSpindleSpeed $ANOUT[1] ;speed signal out to spindle
+
+
+;Global Variables
+GLOBAL INT nSpindleSpeed=0 ;Set speed of the spindle
+GLOBAL CONST INT nSpindleMaxSpeed=24000
+GLOBAL INT nFeedRate=0 ;Feed rate of robot while machining
+
+GLOBAL BOOL bInvMessage=FALSE ;for triggering inverter message
+
+GLOBAL BOOL bRequestCoolant=FALSE ;mask for coolant signal
+GLOBAL BOOL bRequestSpindle=FALSE ;mask for spindle signal
+
+GLOBAL FRAME frOffset={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0} ;stored frame for applying an offset
+GLOBAL FRAME frWorkpiece={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0} ;stored frame of the workpiece
+GLOBAL BOOL bSpindleInterrupt=FALSE
+
+ENDDAT

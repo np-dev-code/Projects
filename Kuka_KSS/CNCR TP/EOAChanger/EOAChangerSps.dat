@@ -1,0 +1,12 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 157
+DEFDAT  EOACHANGERSPS PUBLIC
+
+GLOBAL BOOL bSchunkFailMsg=FALSE
+GLOBAL BOOL bSpindle24v=TRUE
+
+ENDDAT

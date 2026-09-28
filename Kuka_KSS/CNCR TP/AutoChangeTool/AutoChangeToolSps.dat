@@ -1,0 +1,23 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 153
+DEFDAT  AUTOCHANGETOOLSPS PUBLIC
+
+;digital inputs 
+;GLOBAL SIGNAL iToolLocked $IN[] ;tool locked from spindle 
+;GLOBAL SIGNAL iOpenCollet $IN[] ;collet open from spindle 
+
+;digital outputs
+;GLOBAL SIGNAL oToolUnlock1 $OUT[] ;Tool unlock 1 
+;GLOBAL SIGNAL oToolLock $OUT[] ;Tool lock for spindle  
+;GLOBAL SIGNAL oToolUnlock2 $OUT[] ;Tool unlock 2 to spindle
+
+
+
+;Global Variables
+GLOBAL INT nToolHeld=0 ;Current tool held by robot
+
+
+ENDDAT

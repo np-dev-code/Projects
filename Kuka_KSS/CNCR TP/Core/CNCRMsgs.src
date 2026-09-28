@@ -1,0 +1,76 @@
+&ACCESS RV
+&REL 50
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF CNCRMsgs( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.8.51
+;************************************************
+; Description: message related source files
+;************************************************
+
+END
+
+GLOBAL DEF WarningMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+
+DECL CNCRMessage fin_CNCRMsg
+DECL INT fin_nGroupNo
+ 
+IF fin_CNCRMsg.bDisplayFlag==FALSE THEN
+   
+   MsgNotify(fin_CNCRMsg.strMsg[], fin_CNCRMsg.strName[],,,fin_nGroupNo + fin_CNCRMsg.nNo, E_progNotifyMsgOpt)   
+   fin_CNCRMsg.bDisplayFlag=TRUE 
+ENDIF 
+   
+END
+
+GLOBAL DEF DisplayMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+
+DECL CNCRMessage fin_CNCRMsg
+DECL INT fin_nGroupNo
+ 
+   MsgNotify(fin_CNCRMsg.strMsg[], fin_CNCRMsg.strName[],,,fin_nGroupNo + fin_CNCRMsg.nNo, E_progNotifyMsgOpt)   
+   
+END
+
+GLOBAL DEF WarningClear(fin_CNCRMsg:OUT )
+
+DECL CNCRMessage fin_CNCRMsg
+ 
+fin_CNCRMsg.bDisplayFlag= FALSE 
+
+END
+
+GLOBAL DEF CheckWarningMsg(bCondition:IN, fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+
+DECL CNCRMessage fin_CNCRMsg
+DECL INT fin_nGroupNo
+DECL BOOL bCondition
+ 
+IF bCondition==TRUE THEN
+   WarningMsg(fin_CNCRMsg,fin_nGroupNo)
+ELSE
+   WarningClear(fin_CNCRMsg)   
+   
+ENDIF 
+   
+END
+
+GLOBAL DEFFCT INT MessageBoxYesNo(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+
+DECL CNCRMessage fin_CNCRMsg
+DECL INT fin_nGroupNo
+
+DECL INT nAnswer
+nAnswer = 0
+MsgDialog(nAnswer,fin_CNCRMsg.strMsg[],fin_CNCRMsg.strName[],,,,,,,"No","Yes", FALSE, fin_nGroupNo + fin_CNCRMsg.nNo, E_spsMsgOpt)
+
+return nAnswer
+   
+ENDFCT

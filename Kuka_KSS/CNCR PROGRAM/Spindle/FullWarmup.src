@@ -1,0 +1,106 @@
+&ACCESS RVP
+&REL 9
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCRobotics\Robot
+DEF FullWarmup( )
+INT _nAnswer
+INT _nCount
+BOOL _bSpindleOn
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    GLOBAL INTERRUPT DECL 4 WHEN bAirInterrupt==TRUE DO AirSensorInterrupt ( )
+    INTERRUPT ON 4
+    GLOBAL INTERRUPT DECL 5 WHEN bSpindleInterrupt==TRUE DO SpindleInterrupt ( )
+    INTERRUPT ON 5
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.12.48
+;************************************************
+; Description: Routine to Warm up the robot and
+; Spindle
+;************************************************
+
+;Initialise variables
+
+CheckEOATooling(#SPINDLE)
+
+_nCount = 0
+_bSpindleOn = TRUE
+$TIMER_STOP[WARMUP_TIMER] = TRUE
+$TIMER[WARMUP_TIMER] = WARMUP_TIME
+  
+MsgNotify("Robot and spindle warmup process has begun..", "Robot",,, nRobotMsg + 8, E_progNotifyMsgOpt)
+
+MsgDialog(_nAnswer,"Ensure the robot is clear to warm up and spindle has a fit for warm up tool.","Robot",,,,,,,"Exit","Continue", FALSE, nRobotMsg + 6, E_progCommonMsgOpt)
+
+IF (_nAnswer == 1) THEN
+	_nAnswer = 0
+ELSE
+	RETURN
+ENDIF
+
+;Check there is a tool in the spindle and turn on spindle
+WAIT FOR iToolLocked
+nSpindleSpeed = 4000
+SpindleOn()
+
+;Loop until Axis 1 is above 313 degrees kelvin
+WHILE ($MOT_TEMP[1] < 313) OR (_nCount < 6)
+	;Start warm up timer
+	$TIMER_STOP[WARMUP_TIMER] = FALSE
+   
+   ;Motions here
+;FOLD SPTP P1 CONT Vel=100 % PDAT2 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT2; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XP1 WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FP1), $BASE = SBASE(FP1.BASE_NO), $IPO_MODE = SIPO_MODE(FP1.IPO_FRAME), $LOAD = SLOAD(FP1.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT2), $APO = SAPO_PTP(PPDAT2), $GEAR_JERK[1] = SGEAR_JERK(PPDAT2), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+;FOLD SPTP HOME CONT Vel=100 % PDAT3 ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.spline; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT3; Kuka.VelocityPtp=100; Kuka.VelocityFieldEnabled=True; Kuka.ColDetectFieldEnabled=True; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=SPTP
+;ENDFOLD
+SPTP XHOME WITH $VEL_AXIS[1] = SVEL_JOINT(100.0), $TOOL = STOOL2(FHOME), $BASE = SBASE(FHOME.BASE_NO), $IPO_MODE = SIPO_MODE(FHOME.IPO_FRAME), $LOAD = SLOAD(FHOME.TOOL_NO), $ACC_AXIS[1] = SACC_JOINT(PPDAT3), $APO = SAPO_PTP(PPDAT3), $GEAR_JERK[1] = SGEAR_JERK(PPDAT3), $COLLMON_TOL_PRO[1] = USE_CM_PRO_VALUES(0) C_Spl
+;ENDFOLD
+    
+	; Test if the count has maxed out
+    IF _nCount < 6 THEN
+		;When timer triggers
+        IF $TIMER_FLAG[WARMUP_TIMER] THEN
+			;Increas spindle speed, increment count and restart timer
+            nSpindleSpeed = nSpindleSpeed + 4000
+            _nCount = _nCount + 1
+            $TIMER[WARMUP_TIMER] = WARMUP_TIME
+        ENDIF
+    ELSE
+        IF _bSpindleOn THEN
+			;Turn spindle off and set flag low
+            SpindleOff()         
+            _bSpindleOn = FALSE
+        ENDIF
+    ENDIF
+      
+	;Prevention to stop spindle going over max speed 
+    IF nSpindleSpeed > nSpindleMaxSpeed THEN
+        nSpindleSpeed = nSpindleMaxSpeed
+    ENDIF
+ENDWHILE         
+
+;Return home
+MsgNotify("Robot and spindle fully warmed up.", "Robot",,, nRobotMsg + 9, E_progNotifyMsgOpt)
+HomePosition()
+
+END

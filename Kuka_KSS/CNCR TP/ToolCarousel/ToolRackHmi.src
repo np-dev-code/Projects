@@ -1,0 +1,76 @@
+&ACCESS RV
+&REL 6
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF ToolRackHmi( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.13.46
+;************************************************
+; Description: sps to control the tool rack hmi.
+;************************************************
+
+;If drop is pressed, call the ToolDrop() routine
+IF (bHmiDrop) THEN
+  MsgDialog(nHmiDropAns,"The robot will now drop its held tool in the rack.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 12, E_spsMsgOpt)
+   bHmiDrop = FALSE
+ENDIF
+       
+IF (nHmiDropAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/HmiToolCheck()")
+   nHmiDropAns = 0
+ENDIF
+   
+;If Take is pressed, call the ToolTake() routine
+IF (bHmiTake) THEN
+   MsgDialog(nHmiTakeAns,"The robot will now take the selected tool from the tool rack.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 13, E_spsMsgOpt)
+   bHmiTake = FALSE
+ENDIF
+      
+IF (nHmiTakeAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolTake(nNewTool)")
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   nHmiTakeAns = 0
+ENDIF
+   
+;If Rotate is pressed, call the ToolRackMove(nNewTool) routine
+IF (bHmiRotate) THEN
+   MsgDialog(nHmiRotateAns,"The tool rack will now move to the seleceted position.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 14, E_spsMsgOpt)
+   bHmiRotate = FALSE
+ENDIF
+      
+IF (nHmiRotateAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolRackMove(nNewTool)")
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   nHmiRotateAns = 0
+ENDIF
+   
+;If rack close is pressed, call the routine to close the tool rack
+IF (bHmiTrClose) THEN
+   MsgDialog(nHmiTrCloseAns,"The tool rack lid will now close.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 14, E_spsMsgOpt)
+   bHmiTrClose = FALSE
+ENDIF
+      
+IF (nHmiTrCloseAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolRackClose()")
+   nHmiTrCloseAns = 0
+ENDIF
+   
+;If rack open is pressed, call the routine to open the tool rack
+IF (bHmiTrOpen) THEN
+   MsgDialog(nHmiTrOpenAns,"The tool rack lid will now open.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 14, E_spsMsgOpt)
+   bHmiTrOpen = FALSE
+ENDIF
+      
+IF (nHmiTrOpenAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolRackOpen()")
+   nHmiTrOpenAns = 0
+ENDIF
+
+END

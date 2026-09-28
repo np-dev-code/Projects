@@ -1,0 +1,20 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 6
+DEFDAT  TOOLRACKHMI PUBLIC
+
+GLOBAL INT nNewTool=10 ;New tool being taken from the rackGLOBAL INT nToolRackPosition=1
+GLOBAL BOOL bHmiDrop=FALSE
+GLOBAL INT nHmiDropAns=0
+GLOBAL BOOL bHmiTake=FALSE
+GLOBAL INT nHmiTakeAns=0
+GLOBAL BOOL bHmiRotate=FALSE
+GLOBAL INT nHmiRotateAns=0
+GLOBAL BOOL bHmiTrClose=FALSE
+GLOBAL INT nHmiTrCloseAns=0
+GLOBAL BOOL bHmiTrOpen=FALSE
+GLOBAL INT nHmiTrOpenAns=0
+
+ENDDAT

@@ -1,0 +1,91 @@
+&ACCESS RVO
+&REL 187
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF CNCRSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.16.51
+;************************************************
+; Description: sps to control cell safety features.
+;              Defines the state of the cell and calls
+;              the high priority interrupts
+;************************************************
+
+AirKnifeSps()
+AirSensorSps(bAirFault)
+AutoChangeToolSps()
+CeadSps()
+RobotSps()
+EOAChangerSps()
+FlexxPumpSps()
+ToolRackSps()
+ChillerSps(bChillerFault)
+ButtonControlSps()
+SpindleSps(bAirFault OR bChillerFault, bSpindleFault)
+
+IF iSpindleOnRobot == TRUE THEN
+bFaulted = bSpindleFault OR bAirFault OR bDoorFault OR bChillerFault
+ENDIF
+IF iCeadOnRobot == TRUE THEN
+bFaulted = bAirFault OR bDoorFault OR bHeatzoneFault OR bServoFault OR bTransportFault
+ENDIF
+
+;The following System States are 
+;EMERGENCY_STOP
+;DOORS_OPEN_STOP,
+;FAULT_STOPPED, 
+;SYSTEM_OK,
+
+IF (NOT $ALARM_STOP) THEN
+   systemState = #EMERGENCY_STOP
+ELSE
+IF bFaulted THEN
+         systemState = #FAULT
+   ELSE
+      IF (($AUT OR $EXT) AND (NOT $USER_SAF )) THEN
+         systemState = #DOOR_OPEN
+      ELSE
+         systemState = #SYSTEM_OK
+      ENDIF
+   ENDIF
+ENDIF
+ 
+IF $PRO_STATE1 == #P_ACTIVE THEN
+   oProgramActive=TRUE
+ELSE
+  oProgramActive=FALSE
+ENDIF    
+
+
+
+
+IF iAirOK AND bPressurise THEN
+  oPressurise = TRUE
+ELSE
+  oPressurise = FALSE
+ENDIF
+
+;Check if the the startup flag hase been set,
+;zero any flags which need to be set at startup.
+IF (oStartUpFlag == FALSE) THEN
+    CeadMsg[10].bDisplayFlag = FALSE
+    bExtruderSelected = FALSE
+    rExtrusionPercentage = 100
+
+    
+    oCoolantOn=FALSE
+    bRequestChiller =FALSE
+    
+    oStartUpFlag=TRUE
+ENDIF
+;IF iAcknowledgeMessages == TRUE THEN
+;    ChillerReset()
+;ENDIF
+END

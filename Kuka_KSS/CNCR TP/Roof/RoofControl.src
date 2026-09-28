@@ -1,0 +1,134 @@
+&ACCESS RVO3
+&REL 29
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF RoofControl(select:IN)
+DECL INT select
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    GLOBAL INTERRUPT DECL 13 WHEN bRoofInterrupt==TRUE DO RoofInterrupt ( )
+    INTERRUPT ON 13 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.19.54
+;************************************************
+; Description: Routine to turn off the air knife
+;************************************************
+;$VEL_EXTAX[2] = 100
+;$ACC_EXTAX[2] = 100
+
+BAS (#ACC_PTP,100)
+BAS (#VEL_PTP,100)
+SWITCH select
+   CASE 1
+      OpenRoof()
+   CASE 2
+      CloseRoof()
+ENDSWITCH
+
+END
+
+GLOBAL DEF OpenRoof( )
+INT _nAns
+;WAIT FOR $IN_HOME
+
+ASYPTP {E2 0}
+
+
+WHILE $ASYNC_STATE<>#IDLE
+   
+IF ( ($POS_ACT.E2<200) AND (iRoofOpenL OR iRoofOpenR) )THEN
+
+_nAns = 0
+
+WHILE TRUE
+MsgDialog(_nAns,"Roof Sensor unexpectedly Triggered, please exit the program and manually recover ","Roof",,,,,,,,"Cancel", FALSE, nRoofMsg, E_spsMsgOpt)
+HALT
+
+ENDWHILE
+
+ENDIF
+
+ENDWHILE
+
+IF ( NOT(iRoofOpenL AND iRoofOpenR) )THEN
+
+_nAns = 0
+WHILE TRUE
+MsgDialog(_nAns,"Roof Sensors not triggered at end off motion. ","Roof",,,,,,,,"Cancel", FALSE, nRoofMsg, E_spsMsgOpt)
+HALT
+ENDWHILE
+
+ENDIF
+
+END
+
+GLOBAL DEF CloseRoof( )
+INT _nAns
+;WAIT FOR $IN_HOME
+
+ASYPTP {E2 10500}
+
+WHILE $ASYNC_STATE<>#IDLE
+   
+IF ( ($POS_ACT.E2>10300) AND (iRoofClosedL OR iRoofClosedR) )THEN
+
+_nAns = 0
+
+   WHILE TRUE
+   MsgDialog(_nAns,"Roof Sensor unexpectedly Triggered, please exit the program and manually recover ","Roof",,,,,,,,"Cancel", FALSE, nRoofMsg, E_spsMsgOpt)
+   HALT
+   ENDWHILE
+
+ENDIF
+
+ENDWHILE
+
+IF ( NOT(iRoofClosedL AND iRoofClosedR) )THEN
+   _nAns = 0
+   WHILE TRUE
+   MsgDialog(_nAns,"Roof Sensors not triggered at end off motion. ","Roof",,,,,,,,"Cancel", FALSE, nRoofMsg, E_spsMsgOpt)
+   HALT
+   ENDWHILE
+ENDIF
+
+
+
+;WAIT FOR (NOT iRoofOpenL) AND (NOT iRoofOpenR) AND iRoofClosedL AND iRoofClosedR
+
+END
+
+GLOBAL DEF TraceRoof( )
+
+;WAIT FOR $IN_HOME
+BAS(#ACC_PTP,100)
+BAS(#VEL_PTP,100)
+
+;ASYPTP {E2 5000}
+
+$OUT[8] = TRUE
+ASYPTP {E2 2000}
+WAIT FOR $ASYNC_STATE==#IDLE
+
+WAIT SEC 5
+ASYPTP {E2 0}
+WAIT FOR $ASYNC_STATE==#IDLE
+
+$OUT[8] = FALSE
+;WAIT FOR (NOT iRoofOpenL) AND (NOT iRoofOpenR) AND iRoofClosedL AND iRoofClosedR
+WAIT SEC 5
+END

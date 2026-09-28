@@ -1,0 +1,53 @@
+&ACCESS RV6
+&REL 35
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF ToolLock( )
+;FOLD INI
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.18.54
+;************************************************
+; Description: Routine to lock the spindle
+;************************************************
+
+CheckEOATooling(#SPINDLE)
+
+;Wait for air pressure OK
+WAIT FOR (iAirOK) 
+
+;Cancel tool unlock signals
+oToolUnlock1 = FALSE
+oToolUnlock2 = FALSE
+
+;Lock spindle and cancel cone clear 
+;oToolLock = TRUE       
+;oConeClear = FALSE     
+
+;Time delay to allow for lock to complete
+WAIT SEC 1
+
+;Ensure tool is present if expected
+WAIT FOR NOT iOpenCollet
+
+IF (nToolHeld == 0) THEN		
+  WAIT FOR (NOT iToolLocked)
+ELSE
+  WAIT FOR (iToolLocked)
+ENDIF
+
+END

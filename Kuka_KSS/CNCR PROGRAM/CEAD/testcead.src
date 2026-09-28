@@ -1,0 +1,85 @@
+&ACCESS RVO
+&REL 87
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR
+DEF TestCEAD( )
+DECL INT _i
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+GLOBAL INTERRUPT DECL 4 WHEN bCeadInterrupt== TRUE DO CeadInterrupt()
+    INTERRUPT ON 4
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.18.51
+;************************************************
+; Description: Routine to test the cead extruder.
+;************************************************
+
+;BCO move so the program can be run in automatic
+PTP $POS_ACT
+
+;Clear cead errors is present
+ResetCead()
+
+;Set extruder perameters
+rPumpTime = 30   ;Time(seconds) pump will pull material to the hopper 
+rShotSize = 1.0 ;Time(seconds) the pinch valve will open, allowing material through 
+SetPelletSource (#INTERNAL_CABINET) ;Set the source of material as the dryer
+oBuzzOnEmpty = TRUE
+
+;Set temperatures
+SetHeatZones (160,170,180,180);
+
+;Ready system
+HeatersOn()
+TransportOn()
+WaitForReady()
+
+;Start extrusion
+SetScrewSpeed(10)
+RotationOn()
+
+;Allow extrusion to work so tests can be carried out
+FOR _i= 1 TO 180
+	WAIT SEC 3
+   SetScrewSpeed(_i)
+ENDFOR
+
+;Change of heatzones while running should test over temp signals
+SetHeatZones (230,240,250,250)
+
+;Allow extrusion to work so tests can be carried out
+FOR _i= 1 TO 180
+	WAIT SEC 3
+   SetScrewSpeed(_i)
+ENDFOR
+
+;Change of heatzones while running should test under temp signals
+SetHeatZones (160,170,180,180);
+
+;Allow extrusion to work so tests can be carried out
+FOR _i= 1 TO 180
+	WAIT SEC 3
+   SetScrewSpeed(_i)
+ENDFOR
+
+;Finish program and turn off extruder
+SetScrewSpeed(0)
+FinishPrint()
+
+
+END

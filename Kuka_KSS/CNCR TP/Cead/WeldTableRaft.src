@@ -1,0 +1,57 @@
+&ACCESS RVO
+&REL 6
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF WeldTableRaft(_rStartX:IN,_rStartY:IN,_rLayerHeight:IN,_nRaftWidth:IN,_nRaftLength:IN,_nHoleSpacing:IN)
+
+DECL INT _nRaftWidth,_nRaftLength, i,j,_nHoleSpacing,_nWidthSteps,_nLengthSteps,_nDirection
+DECL REAL _rStartX,_rStartY,_rFillTime,_rLayerHeight,_rEndPosY
+DECL FRAME _startPos,_newPos
+
+_rFillTime = 1.0
+_nDirection = 1
+_nWidthSteps = (_nRaftWidth/_nHoleSpacing) + 1
+_nLengthSteps = (_nRaftLength/_nHoleSpacing) + 1
+_rEndPosY = 0.0
+$VEL.CP = 0.2
+
+_startPos.X = _rStartX
+_startPos.Y = _rStartY
+_startPos.Z = _rLayerHeight
+_startPos.A = $POS_ACT.A
+_startPos.B = $POS_ACT.B
+_startPos.C = $POS_ACT.C
+
+LIN _startPos
+WAIT SEC 0
+$VEL.CP = 0.02
+
+RotationOn()
+
+WAIT SEC _rFillTime + 2
+
+FOR i = 1 TO _nLengthSteps
+   FOR j = 1 to _nWidthSteps
+      IF _nDirection > 0 THEN
+         _newPos.Y = _startPos.Y + (j*_nHoleSpacing*_nDirection)
+         LIN _newPos
+         WAIT SEC _rFillTime
+      ELSE
+         _newPos.Y = _rEndPosY + (j*_nHoleSpacing*_nDirection)
+         LIN _newPos
+         WAIT SEC _rFillTime
+      ENDIF
+   ENDFOR
+   _rEndPosY = $POS_ACT.Y
+   _newPos.X = _startPos.X + (i*_nHoleSpacing)
+   _nDirection = _nDirection * (-1)
+   LIN _newPos
+   WAIT SEC _rFillTime
+ENDFOR
+
+RotationOff()
+
+LIN_REL {Z 100}
+
+
+END

@@ -1,0 +1,30 @@
+&ACCESS RV
+&REL 154
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF AirSensorSps( _bFault:OUT  )
+
+;************************************************
+;              CNC Robotics Ltd
+;              Unit 3
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps control specific for the spindle.
+;************************************************
+  
+ENUM SYSYEM_STATE _systemState
+BOOL _bFault
+
+IF (NOT iAirOK) THEN
+    _bFault = TRUE
+ELSE
+    _bFault=FALSE
+ENDIF
+
+
+END

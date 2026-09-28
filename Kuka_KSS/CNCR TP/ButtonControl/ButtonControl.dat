@@ -1,0 +1,14 @@
+&ACCESS  RV
+&REL 7
+DEFDAT  BUTTONCONTROL PUBLIC
+
+;digital inputs 
+
+
+;GLOBAL SIGNAL iStart $IN[] ;operator start button
+;GLOBAL SIGNAL iStop $IN[] ;operator stop button 
+; 
+GLOBAL BOOL bStopMessage=TRUE ;for triggering stop message
+GLOBAL BOOL bPauseFlag=FALSE
+
+ENDDAT

@@ -1,0 +1,42 @@
+name: KRL lint
+
+on:
+  push:
+    paths:
+      - "**/*.src"
+      - "**/*.dat"
+      - "**/*.sub"
+      - "**/*.SRC"
+      - "**/*.DAT"
+      - "**/*.SUB"
+      - "tools/krl_lint.py"
+      - "tools/test_krl_lint.py"
+      - ".github/workflows/krl-lint.yml"
+  pull_request:
+    paths:
+      - "**/*.src"
+      - "**/*.dat"
+      - "**/*.sub"
+      - "**/*.SRC"
+      - "**/*.DAT"
+      - "**/*.SUB"
+      - "tools/krl_lint.py"
+      - "tools/test_krl_lint.py"
+      - ".github/workflows/krl-lint.yml"
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test the linter
+        run: python -m unittest discover -s tools -p "test_*.py" -v
+
+      - name: Lint KRL
+        run: python tools/krl_lint.py StatementFabrication --strict

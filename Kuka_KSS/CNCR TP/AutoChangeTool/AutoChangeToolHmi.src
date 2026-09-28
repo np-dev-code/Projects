@@ -1,0 +1,64 @@
+&ACCESS RVO14
+&REL 15
+&COMMENT USER specified PLC program
+DEF  AutoChangeToolHmi ( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps for controlling the hmis
+;************************************************
+
+;SYSTEM HMI PAGE
+    
+    ;For tool measuring HMI
+  ;For displaying current tools TCP
+IF (nToolHeld == 0) THEN
+   frHmiCurrentTCP = $NULLFRAME
+ELSE
+   frHmiCurrentTCP = TOOL_DATA[nToolHeld]
+ENDIF
+  
+  ;If lock is pressed, call the ToolLock() routine
+IF (bHmiLock) THEN
+   IF (nToolHeld == 0)THEN
+      MsgDialog(nHmiLockAns,"The robot will now lock the spindle.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 12, E_spsMsgOpt)
+   ELSE
+      MsgDialog(nHmiLockAns,"The robot will now lock tool in the spindle.","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 14, E_spsMsgOpt)
+   ENDIF
+   bHmiLock = FALSE
+ENDIF
+       
+IF (nHmiLockAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolLock()")
+   CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   nHmiLockAns = 0
+ENDIF
+   
+;If Take is pressed, call the ToolUnlock() routine
+IF (bHmiUnlock) THEN
+   IF (nToolHeld == 0) THEN
+      MsgDialog(nHmiUnlockAns,"The robot will now unlock the spindle","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 13, E_spsMsgOpt)
+   ELSE
+      MsgDialog(nHmiUnlockAns,"The robot will now unlock the tool from the spindle","AutoToolChange",,,,,,,"Cancel","Continue", FALSE, nAutoToolChangeMsg + 15, E_spsMsgOpt)
+   ENDIF
+   bHmiUnlock = FALSE
+ENDIF
+      
+IF (nHmiUnlockAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/ToolUnlock()")
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   nHmiUnlockAns = 0
+ENDIF
+
+
+
+END
+
+
+;ENDFOLD (USER SUBROUTINE)

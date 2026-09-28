@@ -1,0 +1,23 @@
+&ACCESS RVP
+&REL 187
+&PARAM DISKPATH = KRC:\R1\Program\CNCR\CNCR_SUB\TOOL_MEASURE
+DEF  ApplyOffset ()
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.20.54
+;************************************************
+; Description: Program to have robot measure its
+; currently held tool.
+;************************************************
+tcpOffset.A = 0
+tcpOffset.B = 0
+tcpOffset.C = 0
+
+TipCalc()
+
+END

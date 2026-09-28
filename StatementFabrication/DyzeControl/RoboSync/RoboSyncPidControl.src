@@ -1,7 +1,7 @@
 &ACCESS RVO3
 &REL 16
 &PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
-DEF RoboSyncControl( )
+DEF RoboSyncPidControl( )
 ;************************************************
 ;     NextState Automation Ltd
 ;     www.nextstateautomation.co.uk
@@ -9,12 +9,20 @@ DEF RoboSyncControl( )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncPidControl
+;     Purpose: Temperature, PID gain, autotune and alarm functions for
+;              the RoboSync Hub PID controllers 0..3
 ;************************************************
 END
 
-
-
 GLOBAL DEFFCT REAL GetLowerTemperature (fi_pidType:IN)
+;------------------------------------------------
+; Name    : GetLowerTemperature
+; Purpose : Read the commanded setpoint low limit (SPLL)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : REAL, degC
+; Notes   : Reads back the robot output word, not the controller
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -35,6 +43,14 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetLowerTemperature (fi_pidType:IN, fi_temp:IN)
+;------------------------------------------------
+; Name    : SetLowerTemperature
+; Purpose : Write the setpoint low limit (SPLL)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : limit, degC
+; Returns : -
+; Notes   : Controller requires SPLL < SPHL
+;------------------------------------------------
 DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 DECL INT nVal
@@ -58,6 +74,13 @@ ENDSWITCH
 END
 
 GLOBAL DEFFCT REAL GetUpperTemperature (fi_pidType:IN)
+;------------------------------------------------
+; Name    : GetUpperTemperature
+; Purpose : Read the commanded setpoint high limit (SPHL)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : REAL, degC
+; Notes   : Reads back the robot output word, not the controller
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -78,6 +101,14 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetUpperTemperature (fi_pidType:IN, fi_temp:IN)
+;------------------------------------------------
+; Name    : SetUpperTemperature
+; Purpose : Write the setpoint high limit (SPHL)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : limit, degC
+; Returns : -
+; Notes   : Controller requires SPHL > SPLL
+;------------------------------------------------
 DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 DECL INT nVal
@@ -101,6 +132,12 @@ ENDSWITCH
 END
 
 GLOBAL DEFFCT REAL GetTemperature (fi_pidType:IN)
+;------------------------------------------------
+; Name    : GetTemperature
+; Purpose : Read the measured temperature
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : REAL, degC
+;------------------------------------------------
 
 DECL ENUM_PID_TYPE fi_pidType
 
@@ -123,6 +160,15 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF PidSetPoint(fi_pidType:IN, fi_temp:IN)
+;------------------------------------------------
+; Name    : PidSetPoint
+; Purpose : Write the temperature setpoint, limits are not changed
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : setpoint, degC
+; Returns : -
+; Notes   : Controller rejects a setpoint outside SPLL..SPHL,
+;           use SetTemperature to widen the limits as needed
+;------------------------------------------------
 DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 DECL INT nVal
@@ -146,7 +192,13 @@ ENDSWITCH
 END
 
 GLOBAL DEFFCT INT GetPidKp (fi_pidType:IN)
-DECL REAL fi_temp
+;------------------------------------------------
+; Name    : GetPidKp
+; Purpose : Read the proportional band Pb (Kp) reported by the controller
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : INT, 0..5000 = 0..500.0 %
+; Notes   : Only valid while autotune is not running
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -166,11 +218,17 @@ ENDSWITCH
 
 ENDFCT
 
-
 GLOBAL DEF SetPidKp (fi_pidType:IN, fi_nVal:IN)
+;------------------------------------------------
+; Name    : SetPidKp
+; Purpose : Write the proportional band Pb (Kp)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_nVal    (IN) INT           : 0..5000 = 0..500.0 %
+; Returns : -
+; Notes   : Autotune must not be running
+;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -189,7 +247,13 @@ ENDSWITCH
 END
 
 GLOBAL DEFFCT INT GetPidKd (fi_pidType:IN)
-DECL REAL fi_temp
+;------------------------------------------------
+; Name    : GetPidKd
+; Purpose : Read the derivative time dt (Kd) reported by the controller
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : INT, 0..250 s
+; Notes   : Only valid while autotune is not running
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -210,9 +274,16 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetPidKd (fi_pidType:IN, fi_nVal:IN)
+;------------------------------------------------
+; Name    : SetPidKd
+; Purpose : Write the derivative time dt (Kd)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_nVal    (IN) INT           : 0..250 s
+; Returns : -
+; Notes   : Autotune must not be running
+;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -229,8 +300,15 @@ DEFAULT
 ENDSWITCH
 
 END
+
 GLOBAL DEFFCT INT GetPidKi (fi_pidType:IN)
-DECL REAL fi_temp
+;------------------------------------------------
+; Name    : GetPidKi
+; Purpose : Read the integral rate Ir (Ki) reported by the controller
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : INT, 0..3000 = 0.00..30.00 rep/min
+; Notes   : Only valid while autotune is not running
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -251,6 +329,13 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetAlarmLimit (fi_pidType:IN, fi_temp:IN)
+;------------------------------------------------
+; Name    : SetAlarmLimit
+; Purpose : Write the alarm high limit
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : limit, degC
+; Returns : -
+;------------------------------------------------
 DECL REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 DECL INT _nVal
@@ -276,7 +361,12 @@ ENDSWITCH
 END
 
 GLOBAL DEFFCT REAL GetAlarmLimit (fi_pidType:IN)
-DECL REAL fi_temp
+;------------------------------------------------
+; Name    : GetAlarmLimit
+; Purpose : Read the alarm high limit reported by the controller
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : REAL, degC
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -297,6 +387,14 @@ ENDSWITCH
 ENDFCT
 
 GLOBAL DEF SetAutotune(fi_pidType:IN,fi_nType:IN)
+;------------------------------------------------
+; Name    : SetAutotune
+; Purpose : Send an autotune command
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_nType   (IN) INT           : AUTOTUNE_STOP, AUTOTUNE_FAST
+;                                           or AUTOTUNE_FULL
+; Returns : -
+;------------------------------------------------
 DECL INT fi_nType
 DECL ENUM_PID_TYPE fi_pidType
 
@@ -315,7 +413,14 @@ DEFAULT
 ENDSWITCH
 
 END
+
 GLOBAL DEFFCT BOOL GetAutotuneBit(fi_pidType:IN)
+;------------------------------------------------
+; Name    : GetAutotuneBit
+; Purpose : Read the controller autotune status bit
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : BOOL, TRUE while autotune is running
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -335,11 +440,17 @@ ENDSWITCH
 
 ENDFCT
 
-
 GLOBAL DEF SetPidKi (fi_pidType:IN, fi_nVal:IN)
+;------------------------------------------------
+; Name    : SetPidKi
+; Purpose : Write the integral rate Ir (Ki)
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_nVal    (IN) INT           : 0..3000 = 0.00..30.00 rep/min
+; Returns : -
+; Notes   : Autotune must not be running
+;------------------------------------------------
 DECL INT fi_nVal
 DECL ENUM_PID_TYPE fi_pidType
-DECL INT nVal
 
 SWITCH fi_pidType
 
@@ -358,6 +469,16 @@ ENDSWITCH
 END
 
 GLOBAL DEF SetTemperature (fi_pidType:IN,fi_temp:IN)
+;------------------------------------------------
+; Name    : SetTemperature
+; Purpose : Set the temperature setpoint, widening the setpoint limits first
+;           if the new setpoint is outside them
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : setpoint, degC
+; Returns : -
+; Notes   : Low limit becomes fi_temp*pidDefaultLowerLimit, high limit
+;           fi_temp*pidDefaultUpperLimit. Limits are only ever widened
+;------------------------------------------------
 REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
 INT _nVal
@@ -377,9 +498,14 @@ PidSetPoint(fi_pidType,fi_temp)
 END
 
 GLOBAL DEFFCT REAL GetSetTemperature (fi_pidType:IN)
-REAL fi_temp
+;------------------------------------------------
+; Name    : GetSetTemperature
+; Purpose : Read the commanded temperature setpoint
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : REAL, degC
+; Notes   : Reads back the robot output word, not the controller
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
-INT _nVal
 
 SWITCH fi_pidType
 
@@ -397,12 +523,24 @@ DEFAULT
 ENDSWITCH
 ENDFCT
 
-
 GLOBAL DEF AutoTuneProcess(fi_pidType:IN,fi_temp:IN,fi_fast:IN)
+;------------------------------------------------
+; Name    : AutoTuneProcess
+; Purpose : Run a complete autotune on one PID channel and wait for it
+;           to finish
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_temp    (IN) REAL          : autotune setpoint, degC
+;           fi_fast    (IN) INT           : AUTOTUNE_FAST or AUTOTUNE_FULL
+; Returns : -
+; Notes   : Returns without waiting if autotune does not start within
+;           nAutotuneStartTimeout. No timeout on autotune completion.
+;           Hub guide: tune with other heaters off, in the order
+;           bed, top, bottom, nozzle. Robot interpreter only (WAIT)
+;------------------------------------------------
 
 REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
-INT fi_fast, _nVal
+INT fi_fast
 
 
 SetAutotune(fi_pidType,AUTOTUNE_STOP)
@@ -425,6 +563,13 @@ ENDIF
 END
 
 GLOBAL DEF SetExtruderHeatZones (fi_Temp1:IN, fi_Temp2:IN)
+;------------------------------------------------
+; Name    : SetExtruderHeatZones
+; Purpose : Set both extruder heat zone temperatures
+; Params  : fi_Temp1   (IN) REAL : EXTRUDER0 (top) setpoint, degC
+;           fi_Temp2   (IN) REAL : EXTRUDER1 (bottom) setpoint, degC
+; Returns : -
+;------------------------------------------------
 REAL fi_Temp1,fi_Temp2
 
 SetTemperature(#EXTRUDER0,fi_Temp1)
@@ -433,12 +578,28 @@ SetTemperature(#EXTRUDER1,fi_Temp2)
 END
 
 GLOBAL DEF WaitForExtruderTemps()
+;------------------------------------------------
+; Name    : WaitForExtruderTemps
+; Purpose : Wait until EXTRUDER0 and EXTRUDER1 are within
+;           rTemperatureTolerance of their setpoints
+; Params  : -
+; Returns : -
+; Notes   : No timeout. Robot interpreter only (WAIT)
+;------------------------------------------------
 
 WAIT FOR  CheckAtTemperature(#EXTRUDER0,rTemperatureTolerance) AND CheckAtTemperature(#EXTRUDER1,rTemperatureTolerance)
 
 END
 
 GLOBAL DEFFCT BOOL CheckAtTemperature (fi_pidType:IN,fi_rTol:IN)
+;------------------------------------------------
+; Name    : CheckAtTemperature
+; Purpose : Check whether the measured temperature is within a tolerance
+;           of the setpoint
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+;           fi_rTol    (IN) REAL          : tolerance, +/- degC
+; Returns : BOOL, TRUE if within tolerance
+;------------------------------------------------
 REAL fi_rTol
 DECL ENUM_PID_TYPE fi_pidType
 
@@ -479,9 +640,13 @@ ENDSWITCH
 
 ENDFCT
 
-
-
 GLOBAL DEFFCT BOOL PidError(fi_pidType:IN)
+;------------------------------------------------
+; Name    : PidError
+; Purpose : Check the controller alarm bits
+; Params  : fi_pidType (IN) ENUM_PID_TYPE : PID channel
+; Returns : BOOL, TRUE if any of alarm 1..4 is active
+;------------------------------------------------
 DECL ENUM_PID_TYPE fi_pidType
 
 SWITCH fi_pidType
@@ -500,121 +665,3 @@ DEFAULT
 ENDSWITCH
 
 ENDFCT
-
-GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
-DECL ENUM_STEPPER_PARAM fi_param
-DECL INT fi_nVal,_nTemp
-BOOL _bFlag
-
-_bFlag = bspsControl
-bSpsControl = FALSE
-WAIT FOR bProcessing==FALSE
-
-SWITCH fi_param
-   
-   CASE #CURRENT
-      stepper_Current = fi_nVal
-   CASE #IDLE_CURRENT
-      stepper_idleCurrent = fi_nVal
-   CASE #PULSE_PER_REV
-      stepper_pulsePerRev = fi_nVal
-   CASE #JOG_SPEED  
-      stepper_jogSpeed = ToUnsigned16(fi_nVal)
-   CASE #JOG_ACCEL
-     stepper_jogAccel = fi_nVal
-   CASE #JOG_DECEL
-     stepper_jogDecel = fi_nVal
-   CASE #SPEED
-      stepper_speed = fi_nVal
-   CASE #ACCEL
-      stepper_Accel = fi_nVal
-   CASE #DECEL
-      stepper_Decel = fi_nVal
-   CASE #DISTANCE
-      stepper_Dist = fi_nVal
-   CASE #SET_POSITION ;This might need to be performed in a single write
-      stepper_OpCode2 = 0
-      stepper_OpCode2Param = fi_nVal 
-      stepper_OpCode2 = SET_POSITION
-
-ENDSWITCH
-
-bspsControl = _bFlag
-END
-
-GLOBAL DEF StepperOpcode(fi_nVal:IN)
-DECL INT fi_nVal
-
-   stepper_OpCode = fi_nVal
-
-END
-
-GLOBAL DEF StartJog( fi_nVal:IN )
-DECL INT fi_nVal
-
-StepperOpcode(RESET_ALARM_CODE)
-StepperOpcode(ENABLE_DRIVE)
-
-SetStepperParam(#JOG_SPEED,fi_nVal)
-StepperOpcode(COMMENCE_JOGGING)
-
-END
-
-
-GLOBAL DEF StopJog( )
-
-StepperOpcode(STOP_JOGGING)
-END
-
-GLOBAL DEFFCT BOOL StepperError()
-
-RETURN stepper_alarm<>0
-
- ;stepper_positionLimit   
-; stepper_ccwLimit        
- ;stepper_cwLimit         
-; stepper_overTemperature 
-; stepper_interalVoltage  
- ;stepper_overVoltage     
-; stepper_underVoltage    
-; stepper_overCurrent     
-
- ;stepper_openMotorWinding
- ;stepper_encoderError    
- ;stepper_commsError      
- ;stepper_flashError      
- ;stepper_NoMove          
- ;stepper_AlarmSpare1     
- ;stepper_blankQSegment   
- ;stepper_AlarmSpare2     
-ENDFCT
-
-GLOBAL DEFFCT INT ToUnsigned16(fi_nVal:IN)
-;Two's complement encoding of a signed value for a 16 bit output
-DECL INT fi_nVal
-
-IF fi_nVal < 0 THEN
-   RETURN 65536 + fi_nVal
-ENDIF
-RETURN fi_nVal
-ENDFCT
-
-GLOBAL DEFFCT INT Truncate16(n:IN)
-
-DECL INT ofs
-DECL INT n, nOut
-DECL CHAR buf[4]
-
-
-ofs=0
-cast_to(buf[],ofs,n)
-
-buf[3] = 0
-buf[4] = 0
-
-ofs=0
-cast_from(buf[],ofs,nOut)
-
-return nOut
-ENDFCT
-

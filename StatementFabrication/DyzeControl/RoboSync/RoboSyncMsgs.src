@@ -12,6 +12,172 @@ DEF RoboSyncMsgs(   )
 ;     Contact: helpdesk@nextstateautomation.co.uk
 ;     Date: 14/09/26
 ;     Version: 0.1.1
+;     Module : RoboSyncMsgs
+;     Purpose: Operator messages for stepper and PID controller alarms,
+;              call RoboSyncMsgs() cyclically to update them
 ;************************************************
 
+CheckWarningMsg(stepper_positionLimit ,RoboSyncMsg[1], 1)
+CheckWarningMsg(stepper_ccwLimit,         RoboSyncMsg[2], 1)
+CheckWarningMsg(stepper_cwLimit,          RoboSyncMsg[3], 1) 
+CheckWarningMsg(stepper_overTemperature,  RoboSyncMsg[4], 1)
+CheckWarningMsg(stepper_interalVoltage,   RoboSyncMsg[5], 1)
+CheckWarningMsg(stepper_overVoltage,      RoboSyncMsg[6], 1) 
+CheckWarningMsg(stepper_underVoltage,     RoboSyncMsg[7], 1)
+CheckWarningMsg(stepper_overCurrent,      RoboSyncMsg[8], 1)
+CheckWarningMsg(stepper_openMotorWinding, RoboSyncMsg[9], 1) 
+CheckWarningMsg(stepper_encoderError,     RoboSyncMsg[10], 1) 
+CheckWarningMsg(stepper_commsError,       RoboSyncMsg[11], 1)
+CheckWarningMsg(stepper_flashError,       RoboSyncMsg[12], 1)
+CheckWarningMsg(stepper_NoMove,           RoboSyncMsg[13], 1)
+CheckWarningMsg(stepper_blankQSegment,    RoboSyncMsg[14], 1)
+
+CheckWarningMsg(pid0_alarm1, 		 RoboSyncMsg[15], 1)
+CheckWarningMsg(pid0_alarm2, 		 RoboSyncMsg[16], 1)
+CheckWarningMsg(pid0_alarm3, 		 RoboSyncMsg[17], 1)
+CheckWarningMsg(pid0_alarm4, 		 RoboSyncMsg[18], 1)
+CheckWarningMsg(pid0_lowPVConversion,     RoboSyncMsg[19], 1)
+CheckWarningMsg(pid0_NegativeCoversion,   RoboSyncMsg[20], 1)
+CheckWarningMsg(pid0_highPVConversion,    RoboSyncMsg[21], 1)
+CheckWarningMsg(pid0_linearLimit,         RoboSyncMsg[22], 1)
+CheckWarningMsg(pid0_CableResistance,     RoboSyncMsg[23], 1)
+CheckWarningMsg(pid0_ZeroOutOfRange,      RoboSyncMsg[24], 1)
+CheckWarningMsg(pid0_ColdJunction,        RoboSyncMsg[25], 1)
+
+
+CheckWarningMsg(pid1_alarm1, 		 RoboSyncMsg[26], 1)
+CheckWarningMsg(pid1_alarm2, 		 RoboSyncMsg[27], 1)
+CheckWarningMsg(pid1_alarm3, 		 RoboSyncMsg[28], 1)
+CheckWarningMsg(pid1_alarm4, 		 RoboSyncMsg[29], 1)
+CheckWarningMsg(pid1_lowPVConversion,     RoboSyncMsg[30], 1)
+CheckWarningMsg(pid1_NegativeCoversion,   RoboSyncMsg[31], 1)
+CheckWarningMsg(pid1_highPVConversion,    RoboSyncMsg[32], 1)
+CheckWarningMsg(pid1_linearLimit,         RoboSyncMsg[33], 1)
+CheckWarningMsg(pid1_CableResistance,     RoboSyncMsg[34], 1)
+CheckWarningMsg(pid1_ZeroOutOfRange,      RoboSyncMsg[35], 1)
+CheckWarningMsg(pid1_ColdJunction,        RoboSyncMsg[36], 1)
+
+CheckWarningMsg(pid2_alarm1, 		 RoboSyncMsg[37], 1)
+CheckWarningMsg(pid2_alarm2, 		 RoboSyncMsg[38], 1)
+CheckWarningMsg(pid2_alarm3, 		 RoboSyncMsg[39], 1)
+CheckWarningMsg(pid2_alarm4, 		 RoboSyncMsg[40], 1)
+CheckWarningMsg(pid2_lowPVConversion,     RoboSyncMsg[41], 1)
+CheckWarningMsg(pid2_NegativeCoversion,   RoboSyncMsg[42], 1)
+CheckWarningMsg(pid2_highPVConversion,    RoboSyncMsg[43], 1)
+CheckWarningMsg(pid2_linearLimit,         RoboSyncMsg[44], 1)
+CheckWarningMsg(pid2_CableResistance,     RoboSyncMsg[45], 1)
+CheckWarningMsg(pid2_ZeroOutOfRange,      RoboSyncMsg[46], 1)
+CheckWarningMsg(pid2_ColdJunction,        RoboSyncMsg[47], 1)
+
+CheckWarningMsg(pid3_alarm1, 		 RoboSyncMsg[48], 1)
+CheckWarningMsg(pid3_alarm2, 		 RoboSyncMsg[49], 1)
+CheckWarningMsg(pid3_alarm3, 		 RoboSyncMsg[50], 1)
+CheckWarningMsg(pid3_alarm4, 		 RoboSyncMsg[51], 1)
+CheckWarningMsg(pid3_lowPVConversion,     RoboSyncMsg[52], 1)
+CheckWarningMsg(pid3_NegativeCoversion,   RoboSyncMsg[53], 1)
+CheckWarningMsg(pid3_highPVConversion,    RoboSyncMsg[54], 1)
+CheckWarningMsg(pid3_linearLimit,         RoboSyncMsg[55], 1)
+CheckWarningMsg(pid3_CableResistance,     RoboSyncMsg[56], 1)
+CheckWarningMsg(pid3_ZeroOutOfRange,      RoboSyncMsg[57], 1)
+CheckWarningMsg(pid3_ColdJunction,        RoboSyncMsg[58], 1)
+
+
+
 END
+
+
+
+GLOBAL DEF WarningMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : WarningMsg
+; Purpose : Show a notify message once, until it is cleared
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is updated
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+; Notes   : Message number is fin_nGroupNo + nNo
+;------------------------------------------------
+
+DECL RSYNC_MSG_T fin_CNCRMsg
+DECL INT fin_nGroupNo
+ 
+IF fin_CNCRMsg.bDisplayFlag==FALSE THEN
+   
+   MsgNotify(fin_CNCRMsg.strMsg[], fin_CNCRMsg.strName[],,,fin_nGroupNo + fin_CNCRMsg.nNo, E_progNotifyMsgOpt)   
+   fin_CNCRMsg.bDisplayFlag=TRUE 
+ENDIF 
+   
+END
+
+GLOBAL DEF DisplayMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : DisplayMsg
+; Purpose : Show a notify message every time it is called
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+;------------------------------------------------
+
+DECL RSYNC_MSG_T fin_CNCRMsg
+DECL INT fin_nGroupNo
+ 
+   MsgNotify(fin_CNCRMsg.strMsg[], fin_CNCRMsg.strName[],,,fin_nGroupNo + fin_CNCRMsg.nNo, E_progNotifyMsgOpt)   
+   
+END
+
+GLOBAL DEF WarningClear(fin_CNCRMsg:OUT )
+;------------------------------------------------
+; Name    : WarningClear
+; Purpose : Re-arm a message so WarningMsg shows it again
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is cleared
+; Returns : -
+;------------------------------------------------
+
+DECL RSYNC_MSG_T fin_CNCRMsg
+ 
+fin_CNCRMsg.bDisplayFlag= FALSE 
+
+END
+
+GLOBAL DEF CheckWarningMsg(bCondition:IN, fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : CheckWarningMsg
+; Purpose : Show a message once while a condition is TRUE, re-arm it
+;           when the condition clears
+; Params  : bCondition   (IN)  BOOL        : alarm condition, e.g. an alarm bit
+;           fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is updated
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+;------------------------------------------------
+
+DECL RSYNC_MSG_T fin_CNCRMsg
+DECL INT fin_nGroupNo
+DECL BOOL bCondition
+ 
+IF bCondition==TRUE THEN
+   WarningMsg(fin_CNCRMsg,fin_nGroupNo)
+ELSE
+   WarningClear(fin_CNCRMsg)   
+   
+ENDIF 
+   
+END
+
+GLOBAL DEFFCT INT MessageBoxYesNo(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : MessageBoxYesNo
+; Purpose : Show a No/Yes dialog with the message text
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : INT, button answer from MsgDialog
+;------------------------------------------------
+
+DECL RSYNC_MSG_T fin_CNCRMsg
+DECL INT fin_nGroupNo
+
+DECL INT nAnswer
+nAnswer = 0
+MsgDialog(nAnswer,fin_CNCRMsg.strMsg[],fin_CNCRMsg.strName[],,,,,,,"No","Yes", FALSE, fin_nGroupNo + fin_CNCRMsg.nNo, E_spsMsgOpt)
+
+return nAnswer
+   
+ENDFCT

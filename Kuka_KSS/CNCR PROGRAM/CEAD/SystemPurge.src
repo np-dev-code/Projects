@@ -1,0 +1,97 @@
+&ACCESS RVP
+&REL 23
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCRobotics\CEAD
+DEF SystemPurge( )
+DECL INT _nAns
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+GLOBAL INTERRUPT DECL 4 WHEN bCeadInterrupt==TRUE DO CeadInterrupt ( )
+INTERRUPT ON 4
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.18.51
+;************************************************
+; Description: Routine to purge the extruder of 
+; all material and run purge compund through to
+; clear out the extruder.
+;************************************************
+
+;Start by moving robot to the home position
+HomePosition()
+
+;Check with operator that they have closed the slide to stop material going from the dryer to the hoppper
+MsgDialog(_nAns,"Please close the dryer slide to stop more material coming through.","CEAD",,,,,,,,"OK", FALSE, nCeadMsg + 10, E_spsMsgOpt)
+
+;Prevent system from stopping when hopper is empty
+oEmptyHopperBypass = FALSE
+
+;Motion to move the robot to the purge position
+
+;Set extruder perameters
+rPumpTime = 15	;Time(seconds) pump will pull material to the hopper 
+rShotSize = 1.0 ;Time(seconds) the pinch valve will open, allowing material through 
+SetPelletSource (#DRYER) ;Set the source of material as the dryer
+
+SetHeatZones (rTempSet1,rTempSet2,rTempSet3,rTempSet4) ;Set heatzones to previous values
+
+TransportOn()  ;Start transport system
+WaitForReady() ;Wait for heatzsones up to temperature and 10 min timer
+
+RotationOn()   ;Start extruding
+SetScrewSpeed(50);Set extruder speed to 50RPM
+
+;Extrude until the hopper is empty of material, then for another 2 mins to fully clear the extruder
+WAIT FOR iTransportWarning
+WAIT SEC 120
+
+;Stop Extruding 
+SetScrewSpeed(0)
+RotationOff()
+
+;Warn the operator that they must have purge compound in the base unit storage
+MsgDialog(_nAns,"Please ensure cabinet storage contains purge compound now.","CEAD",,,,,,,,"OK", FALSE, nCeadMsg + 11, E_spsMsgOpt)
+
+;Change the material selection to draw from the cabinet storage
+SetPelletSource (#INTERNAL_CABINET)
+;Update heatzones to settings for purge compound and wait for system ready
+SetHeatZones (180,190,200,200)
+WaitForReady()
+
+;Start extrusion
+RotationOn()
+SetScrewSpeed(50)
+
+WAIT SEC 300 ;Wait 5 minutes until purge compound is in extruder
+
+_nAns=0
+WHILE _nAns<>1 
+	;Check if system is successfully purged
+	MsgDialog(_nAns,"Has the system been purged successfully.","CEAD",,,,,,,"No","Yes", FALSE, nCeadMsg + 12, E_spsMsgOpt)
+	IF _nAns <> 1 THEN
+		WAIT SEC 120 ;If not fully purged, extrude for another 2 mins
+	ENDIF
+ENDWHILE
+
+;Stop Extruding 
+SetScrewSpeed(0)
+FinishPrint()
+
+;Return to home
+HomePosition()
+
+END
