@@ -1,0 +1,18 @@
+&ACCESS  RVP
+&COMMENT  
+DEFDAT  PurgePosition
+;FOLD EXTERNAL DECLARATIONS;%{PE}%MKUKATPBASIS,%CEXT,%VCOMMON,%P
+;FOLD BASISTECH EXT;%{PE}%MKUKATPBASIS,%CEXT,%VEXT,%P
+EXT  BAS (BAS_COMMAND  :IN,REAL  :IN )
+DECL INT SUCCESS
+;ENDFOLD (BASISTECH EXT)
+;FOLD USER EXT;%{E}%MKUKATPUSER,%CEXT,%VEXT,%P
+;Make your modifications here
+
+;ENDFOLD (USER EXT)
+;ENDFOLD (EXTERNAL DECLARATIONS)
+DECL E6POS XP1={X 1321.29700,Y 214.613586,Z 1174.17725,A -44.3633194,B 88.3089447,C -8.02487755,S 22,T 50,E1 2000.00,E2 10436.8203,E3 0.0,E4 0.0,E5 0.0,E6 0.0}
+DECL FDAT FP1={TOOL_NO 0,BASE_NO 0,IPO_FRAME #BASE,POINT2[] " "}
+DECL PDAT PPDAT1={VEL 20.0000,ACC 100.000,APO_DIST 500.000,APO_MODE #CDIS,GEAR_JERK 100.000,EXAX_IGN 0}
+DECL MODULEPARAM_T LAST_TP_PARAMS={PARAMS[] "Kuka.PointName=P1; Kuka.FrameData.base_no=0; Kuka.FrameData.tool_no=0; Kuka.FrameData.ipo_frame=#BASE; Kuka.FrameData.point2=; Kuka.isglobalpoint=False; Kuka.MoveDataPtpName=PDAT1; Kuka.MovementDataPdat.apo_mode=#CDIS; Kuka.MovementDataPdat.apo_dist=500; Kuka.MovementData.vel=20; Kuka.MovementData.acc=100; Kuka.MovementData.exax_ign=0; Kuka.VelocityPtp=20; Kuka.BlendingEnabled=False; Kuka.APXEnabled=False; Kuka.CurrentCDSetIndex=0"}
+ENDDAT

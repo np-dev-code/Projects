@@ -1,0 +1,42 @@
+&ACCESS RVP1
+&REL 156
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF RoofHmi()
+
+;************************************************
+;              CNC Robotics Ltd
+;              Unit 3
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps control specific for the spindle.
+;************************************************
+
+;If open roof is pressed, call the routine to open the roof
+IF (bHmiRoofOpen) THEN
+   MsgDialog(nHmiRoofOpenAns,"The roof will now open.","Roof",,,,,,,"Cancel","Continue", FALSE, nRoofMsg, E_spsMsgOpt)
+   bHmiRoofOpen = FALSE
+ENDIF
+      
+IF (nHmiRoofOpenAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/RoofControl(1)")
+   nHmiRoofOpenAns = 0
+ENDIF
+   
+;If roof close is pressed, call the routine to close the roof
+IF (bHmiRoofClose) THEN
+   MsgDialog(nHmiRoofCloseAns,"The roof will now close.","Roof",,,,,,,"Cancel","Continue", FALSE, nRoofMsg + 1, E_spsMsgOpt)
+   bHmiRoofClose = FALSE
+ENDIF
+      
+IF (nHmiRoofCloseAns == 1) THEN
+   CWRITE($CMD,E_stat,E_mode,"RUN/R1/RoofControl(2)")
+   nHmiRoofCloseAns = 0
+ENDIF
+
+END

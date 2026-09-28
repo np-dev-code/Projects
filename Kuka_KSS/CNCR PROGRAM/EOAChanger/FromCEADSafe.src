@@ -1,0 +1,68 @@
+&ACCESS RVO7
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\EOAChanger
+DEF FromCEADSafe( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;        Date: 13/10/2022
+;     Version: 1.0
+;************************************************
+; Description: Routine to move the robot to the
+;              Safe Position for Change operations
+;************************************************
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+;PTP $POS_ACT
+
+;FOLD LIN P3 Vel=0.05 m/s CPDAT3 Tool[32]:NULL_CEAD Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P3; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT3; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT3
+FDAT_ACT = FP3
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP3
+;ENDFOLD
+;FOLD LIN P2 Vel=0.05 m/s CPDAT1 Tool[32]:NULL_CEAD Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P2; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = FP2
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP2
+;ENDFOLD
+
+;FOLD LIN P4 Vel=0.05 m/s CPDAT4 Tool[32]:NULL_CEAD Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P4; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT4; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT4
+FDAT_ACT = FP4
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP4
+;ENDFOLD
+EOAChangeSafe()
+END

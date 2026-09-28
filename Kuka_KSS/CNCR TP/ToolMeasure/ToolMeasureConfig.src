@@ -1,0 +1,76 @@
+&ACCESS RVO
+&REL 50
+DEF  ToolMeasureConfig (_nToolNo:in, _rmeasuredLength:in, _rtolerance:in)
+DECL INT _nCount
+DECL INT _nToolNo
+DECL REAL _rMeasuredLength
+DECL REAL _rLength
+DECL REAL _rTolerance
+DECL REAL _rError
+DECL BOOL _bExitFlag
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: Routine to calibrate the tool 
+;              measure sensor to a set tolerance
+;************************************************
+
+CheckEOATooling(#SPINDLE)
+
+_bExitFlag = FALSE
+_nCount = 0
+
+;Store the intaken tool length for later use
+_rLength = _rMeasuredLength
+
+;start the tool measurement from the home position 
+;HomePosition()
+
+ToolTake(_nToolNo)
+
+MsgNotify("Tool measuring calibration started...", "ToolMeasure",,, nMeasureMsg + 14, E_progNotifyMsgOpt)
+
+;Clear the error value to 0
+_rError = 0
+
+;Loop for a count of 10
+WHILE NOT _bExitFlag
+    ;Run the tool measuring routine
+    MeasureTool()
+  
+    ;Error is assigned the input length minus the 
+    ;measured length
+    _rError = (_rLength - rToolLength)
+    
+    ;If the error is more than 50% of the tolerance away from the input value
+    IF (_rError > _rTolerance * 0.5) or (_rError < _rTolerance * (0 - 0.5)) THEN
+        ;Ammend the error to account for this
+        rToolError = rToolError + _rError
+	ELSE
+		_nCount = _nCount + 1
+    ENDIF
+	
+	IF _nCount > 2 THEN
+		_bExitFlag = TRUE
+	ENDIF
+ENDWHILE
+
+END

@@ -1,0 +1,50 @@
+&ACCESS RVO6
+&REL 8
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\EOAChanger
+DEF AboveSpindle( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;        Date: 13/10/2022
+;     Version: 1.0
+;************************************************
+; Description: Routine to move the robot to the
+;              Directly above the Spindle drop-off
+;              Position
+;************************************************
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;PTP $POS_ACT
+
+;safe position above tool rack level 1, this is roughly central to tool rack 
+
+;INSERT PTP MOVE TO SCHUNK_SAFE HERE!!!! 20% VEL
+;FOLD LIN P1 Vel=0.05 m/s CPDAT1 Tool[31]:NULL_SPINDLE Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT1; Kuka.VelocityPath=0.05; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT1
+FDAT_ACT = FP1
+BAS(#CP_PARAMS, 0.05)
+SET_CD_PARAMS (0)
+LIN XP1
+;ENDFOLD
+
+END

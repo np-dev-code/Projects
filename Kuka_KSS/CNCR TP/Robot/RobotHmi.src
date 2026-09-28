@@ -1,0 +1,121 @@
+&ACCESS RVO
+&REL 14
+&COMMENT USER specified PLC program
+DEF  RobotHmi ( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.23.48
+;************************************************
+; Description: sps for controlling the hmis
+;************************************************
+  
+
+    
+  ;If select button is pressed, select the program
+  IF (bHmiSelect) THEN
+    ;CWRITE($CMD,E_stat,E_mode,"RUN/R1/")
+    bHmiSelect = FALSE
+  ENDIF
+  
+  ;If stop button is pressed, pause the program
+  IF (bHmiStop) THEN
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+    bHmiStop = FALSE
+  ENDIF
+    
+  ;If reset button is pressed, reset the program
+  IF (bHmiReset) THEN
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+    CWRITE($CMD,E_stat,E_mode,"RESET 1")
+    bHmiReset = FALSE
+  ENDIF
+  
+  ;If cancel is pressed, cancel the program 
+  IF (bHmiCancel) THEN
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+    CWRITE($CMD,E_stat,E_mode,"CANCEL 1")
+    bHmiCancel = FALSE
+  ENDIF
+  
+  
+  ;Next Section only available without program selected
+  IF ($PRO_STATE1 == #P_FREE) THEN
+  
+    ;If home is pressed, call the HomePosition() routine
+    IF (bHmiHome) THEN
+      MsgDialog(nHmiHomeAns,"This program will move the robot directly to the home position.","Robot",,,,,,,"Cancel","Continue", FALSE, nRobotMsg, E_spsMsgOpt)
+      bHmiHome = FALSE
+    ENDIF
+    
+    IF (nHmiHomeAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/HomePosition()")
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiHomeAns = 0
+    ENDIF
+    
+     IF (bHmiHomeRobot) THEN
+      MsgDialog(nHmiHomeRobotAns,"This program will move the robot directly to the home position.","Robot",,,,,,,"Cancel","Continue", FALSE, nRobotMsg, E_spsMsgOpt)
+      bHmiHomeRobot = FALSE
+    ENDIF
+    
+    IF (nHmiHomeRobotAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/HomeRobot()")
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiHomeRobotAns = 0
+    ENDIF
+      
+    ;If warm-up is pressed, call the Warmup() routine
+    IF (bHmiWarmUp) THEN
+      MsgDialog(nHmiWarmupAns,"Would you like to warm-up the robot, the spindle or both?","Robot",,,,,"Cancel","Both","Spindle","Robot", FALSE, nRobotMsg + 1, E_spsMsgOpt)
+      bHmiWarmUp = FALSE
+    ENDIF
+    
+    IF (nHmiWarmupAns <> 4) THEN
+      SWITCH nHmiWarmupAns
+        CASE 1
+          CWRITE($CMD,E_stat,E_mode,"RUN/R1/RobotWarmup()")
+          CWRITE($CMD,E_stat,E_mode,"STOP 1")
+        CASE 2 
+          CWRITE($CMD,E_stat,E_mode,"RUN/R1/SpindleWarmup()")
+          CWRITE($CMD,E_stat,E_mode,"STOP 1")
+        CASE 3 
+          CWRITE($CMD,E_stat,E_mode,"RUN/R1/FullWarmup()")
+          CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      ENDSWITCH
+      nHmiWarmupAns = 4
+    ENDIF
+    
+    ;If maintneance is pressed, call the MaintenancePosition() routine
+    IF (bHmiMaintenance) THEN
+      MsgDialog(nHmiMaintenanceAns,"This program will move the robot directly to the maintenances position.","Robot",,,,,,,"Cancel","Continue", FALSE, nRobotMsg + 2, E_spsMsgOpt)
+      bHmiMaintenance = FALSE
+    ENDIF
+    
+    IF (nHmiMaintenanceAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/MaintenancePosition()")
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiMaintenanceAns = 0
+    ENDIF
+    
+    ;If cleaning is pressed, call the CleaningPosition() routine
+    IF (bHmiCleaningPosition) THEN
+      MsgDialog(nHmiCleaningAns,"This program will move the robot directly to the cleaning position.","Robot",,,,,,,"Cancel","Continue", FALSE, nRobotMsg + 10, E_spsMsgOpt)
+      bHmiCleaningPosition = FALSE
+    ENDIF
+    
+    IF (nHmiCleaningAns == 1) THEN
+      CWRITE($CMD,E_stat,E_mode,"RUN/R1/CleaningPosition()")
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+      nHmiCleaningAns = 0
+    ENDIF
+  ENDIF 
+    
+END
+
+
+;ENDFOLD (USER SUBROUTINE)

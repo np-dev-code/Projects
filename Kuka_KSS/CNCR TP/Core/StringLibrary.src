@@ -1,0 +1,112 @@
+&ACCESS RV2
+&REL 41
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF StringLibrary( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.7.51
+;************************************************
+; Description: maths related source files
+;************************************************
+
+
+; An evolving collection of functions for String manipulation
+;
+
+END
+
+GLOBAL DEFFCT CHAR[256] PointToString(fiPoint:IN)
+   DECL E6POS fiPoint
+   CHAR _strReturn[128]
+   DECL STATE_T _stat
+   INT _nOffset
+	BOOL _ret
+	_ret = StrClear(_strReturn[])
+   _nOffset=0
+	
+   SWRITE (_strReturn[], _stat, _nOffset, "{X %s, Y %s, Z %s, A %s, B %s, C %s}", RealToString(fiPoint.X), RealToString(fiPoint.Y), RealToString(fiPoint.Z), RealToString(fiPoint.A), RealToString(fiPoint.B), RealToString(fiPoint.C))
+
+   RETURN _strReturn[]
+ENDFCT
+
+
+GLOBAL DEFFCT REAL StringToReal( fiString[]:IN )
+    DECL CHAR fiString[]
+    INT _nOffset
+    REAL _rValue
+    DECL STATE_T _Stat
+    _nOffset = 0
+    _rValue = 0.0
+
+    SREAD(fiString[], _Stat, _nOffset, "%f", _rValue)
+   
+   
+    return _rValue
+ENDFCT
+
+GLOBAL DEFFCT INT StringToInt( fiString[]:IN )
+    DECL CHAR fiString[]
+    INT _nValue
+    DECL STATE_T _Stat
+    INT _nOffset
+    _nOffset=0
+    _nValue = 0
+    
+    SREAD(fiString[], _Stat, _nOffset, "%d", _nValue)
+
+    return _nValue
+ENDFCT
+
+
+GLOBAL DEFFCT CHAR[128] RealToString( finValue:IN )
+    DECL REAL finValue
+    CHAR _strReturn[128]
+    DECL STATE_T _stat
+    INT _nOffset
+	 BOOL _ret
+    _ret = StrClear(_strReturn[])
+    _nOffset=0
+    
+    SWRITE (_strReturn[], _stat, _nOffset, "%f", finValue)
+
+    return _strReturn[]
+ENDFCT
+
+;converts an int to string
+GLOBAL DEFFCT CHAR[128] IntToString( finValue:IN )
+    DECL INT finValue
+    CHAR _strReturn[128]
+    DECL STATE_T _stat
+    INT _nOffset
+	BOOL _ret
+	
+    _ret = StrClear(_strReturn[])
+    _nOffset=0
+    
+    SWRITE (_strReturn[], _stat, _nOffset, "%d", finValue)
+
+    return _strReturn[]
+ENDFCT
+
+;converts a bool to string
+GLOBAL DEFFCT CHAR[128] BooleanToString( finValue:IN )
+    DECL BOOL finValue
+    CHAR _strReturn[128]
+    DECL STATE_T _stat
+    INT _nOffset
+    bool _ret
+    _ret = StrClear(_strReturn[])
+	
+    _nOffset=0
+
+    SWRITE (_strReturn[], _stat, _nOffset, "%d", finValue)
+
+    return _strReturn[]
+ENDFCT
+

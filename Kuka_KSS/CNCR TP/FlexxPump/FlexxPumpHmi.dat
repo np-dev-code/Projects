@@ -1,0 +1,21 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 188
+DEFDAT  FLEXXPUMPHMI PUBLIC
+
+GLOBAL BOOL bApplyLubrication=FALSE
+GLOBAL INT nApplyLubricationAns=0
+
+GLOBAL BOOL bHmiLubricateRun=FALSE
+GLOBAL INT nHmiLubricateRunAns=0
+
+GLOBAL INT nFlexPump=600
+
+GLOBAL BOOL bLubeFault=FALSE
+
+GLOBAL REAL rHmiTrackDistance=855.767273
+GLOBAL REAL rHmiMaxTrackDistance=1.00000E+06
+
+ENDDAT

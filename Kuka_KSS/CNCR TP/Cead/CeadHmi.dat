@@ -1,0 +1,51 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&REL 235
+DEFDAT  CEADHMI PUBLIC
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 01/03/23
+;     Version: 0.0.26
+;************************************************
+; Description: Dat file to store data for the 
+; printer.
+;************************************************
+
+;Extruder control from HMI flags
+GLOBAL BOOL bHmiHeaters=FALSE
+GLOBAL BOOL bHmiRotation=FALSE
+GLOBAL BOOL bHmiTransport=FALSE
+
+;Process control from HMI
+GLOBAL BOOL bProportionalSpeed=FALSE
+GLOBAL REAL rUserPercentage=100.000
+GLOBAL REAL rHmiExtruderPercent=100.000
+GLOBAL REAL rUserPercentageAtLock=100.000
+GLOBAL REAL rOVatLock=100.000
+GLOBAL REAL rHmiExtruderSetSpeed=50.0000
+GLOBAL BOOL bHmiSetSpeed=FALSE
+GLOBAL BOOL bHmiSpeed0=FALSE
+GLOBAL BOOL bPrevProportionalSpeed=FALSE
+GLOBAL BOOL bProportionalSpeedActive=TRUE
+GLOBAL BOOL bPrevHmiRotation=FALSE
+GLOBAL BOOL bStopAll=FALSE
+
+;Purge button control
+GLOBAL BOOL bHmiPurge=FALSE
+GLOBAL INT nHmiPurgeAns=0
+GLOBAL BOOL bHmiSystemPurge=FALSE
+GLOBAL INT nHmiSystemPurgeAns=0
+
+;HMI Display variables
+GLOBAL REAL rCurrentLayer=100.000
+GLOBAL REAL rTotalLayer=100.000
+GLOBAL REAL rHmiPrintSpeed=0.0
+
+ENDDAT

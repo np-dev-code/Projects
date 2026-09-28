@@ -1,0 +1,32 @@
+&ACCESS RV
+&REL 2
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF BeaconPulse(_nTime:IN)
+DECL INT _nTime
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.19.54
+;************************************************
+; Description: Routine to turn on the air knife
+;************************************************
+
+;PULSE(oBeaconBuzzer, _nTime, TRUE)
+
+END

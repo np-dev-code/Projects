@@ -1,0 +1,56 @@
+&ACCESS RV
+&REL 156
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF AirKnifeSps()
+
+;************************************************
+;              CNC Robotics Ltd
+;              Unit 3
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps control specific for the spindle.
+;************************************************
+
+IF bAirBlastStart THEN
+   $TIMER[AIRBLAST_TIMER] = AIRBLAST_TIME
+   $TIMER[AIRBLASTON_TIMER] = AIRBLASTON_TIME
+   $TIMER_STOP[AIRBLAST_TIMER] = FALSE
+   $TIMER_STOP[AIRBLASTON_TIMER] = FALSE
+   bAirBlastStart = FALSE
+ENDIF
+
+IF NOT $TIMER_FLAG[AIRBLAST_TIMER] THEN
+   IF $TIMER_FLAG[AIRBLASTON_TIMER] THEN 
+      IF bAirBlastOn THEN
+         bAirKnife = FALSE
+         AIRBLASTON_TIME = -(nAirBlastPeriod - nAirBlastOnTime)
+         bAirBlastOn = FALSE
+      ELSE
+         bAirKnife = TRUE
+         AIRBLASTON_TIME = -(nAirBlastOnTime)
+         bAirBlastOn = TRUE
+      ENDIF
+      $TIMER[AIRBLASTON_TIMER] = AIRBLASTON_TIME
+   ENDIF
+ELSE
+   IF NOT bAirBlastComp THEN
+      bAirKnife = FALSE
+      bAirBlastComp = TRUE
+   ENDIF
+   $TIMER_STOP[AIRBLAST_TIMER] = TRUE
+   $TIMER_STOP[AIRBLASTON_TIMER] = TRUE
+ENDIF
+      
+IF bAirKnife THEN
+    oAirKnife = TRUE
+ELSE
+    oAirKnife = FALSE
+ENDIF
+
+END

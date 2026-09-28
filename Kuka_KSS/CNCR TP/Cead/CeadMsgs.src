@@ -1,0 +1,41 @@
+&ACCESS RVO
+&REL 243
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF CeadMsgs(   )
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.5.51
+;************************************************
+; Description: sps control specific for the CEAD Extruder.
+;************************************************
+
+CheckWarningMsg( HeatZoneError(), CeadMsg[1],nCeadMsg)
+CheckWarningMsg( ServoError(), CeadMsg[2], nCeadMsg)
+CheckWarningMsg( iPelletTransportError, CeadMsg[3], nCeadMsg)
+CheckWarningMsg( iNoEmergency==FALSE,CeadMsg[4],nCeadMsg)
+
+
+CheckWarningMsg( iServoUtilization,CeadMsg[5],nCeadMsg)
+CheckWarningMsg( iServoTorque,CeadMsg[9],nCeadMsg)
+CheckWarningMsg( iTransportWarning,CeadMsg[6],nCeadMsg)
+CheckWarningMsg( iEmptyPelletStorage,CeadMsg[7],nCeadMsg)
+CheckWarningMsg( iOperatingModeWarning,CeadMsg[8],nCeadMsg)
+CheckWarningMsg( bExtruderHot AND (NOT iCoolingOn),CeadMsg[12],nCeadMsg)
+
+IF  (iFilterCleaning AND (CeadMsg[10].bDisplayFlag==FALSE)) THEN
+   nFilterAns = MessageBoxYesNo(CeadMsg[10],nCeadMsg)
+   CeadMsg[10].bDisplayFlag = TRUE
+ENDIF
+
+IF nFilterAns==1 THEN
+    PULSE (oFilterReset, TRUE, 0.5)
+    nFilterAns = 0
+ENDIF
+END

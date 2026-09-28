@@ -1,0 +1,31 @@
+&ACCESS RVP1
+&REL 1
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\Robot
+DEF HomeRobotThenTrack( )
+DECL E6AXIS RobotHome
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.21.54
+;************************************************
+; Description: Routine to move the robot home
+;************************************************
+
+HomeRobot()
+HomePosition()
+END

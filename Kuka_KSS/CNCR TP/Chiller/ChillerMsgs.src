@@ -1,0 +1,43 @@
+&ACCESS RO1
+&REL 7
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF ChillerMsgs( )
+; CNC ROBOTICS LTD submit programm
+;(Roboter SPS)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps for controlling messages
+;************************************************
+
+DECL KrlMsg_t _msg
+DECL KrlMsgPar_t _msgPar[3]
+DECL KrlMsgOpt_t _msgOpt
+DECL INT _nhandle
+
+ _msg = {modul[] "CNCR", Nr 001, msg_txt[] "Chiller Fault"}
+
+
+;Message to warn when air pressure has been lost
+IF ( bChillerRunning AND ( iChillerAlarm OR NOT(iChillerRunning)) ) THEN 
+
+   IF (NOT bChillerMessage) THEN
+      _nhandle = Set_KrlMsg (#notify, _msg, _msgPar[], _msgOpt)		
+      bChillerMessage = TRUE	
+	ENDIF	
+ELSE	
+	 bChillerMessage = FALSE
+ENDIF
+
+
+
+
+END

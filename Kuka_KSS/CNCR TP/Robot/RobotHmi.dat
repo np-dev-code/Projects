@@ -1,0 +1,29 @@
+&ACCESS  RV
+&COMMENT USER specified PLC program
+&PARAM DISKPATH = TP/CNCR TP/Robot
+&REL 14
+DEFDAT  ROBOTHMI PUBLIC
+
+;Salford HMI Variables
+;PProcess page
+GLOBAL BOOL bHmiSelect=FALSE ;flag for the select button
+
+GLOBAL BOOL bHmiStop=FALSE ;flag for the stop button 
+GLOBAL BOOL bHmiReset=FALSE ;flag for the reset button
+GLOBAL BOOL bHmiCancel=FALSE ;flag for the cancel button
+GLOBAL BOOL bHmiHome=FALSE ;flag for the home button
+GLOBAL BOOL bHmiWarmUp=FALSE ;flag for the warm-up button 
+GLOBAL BOOL bHmiMaintenance=FALSE ;flag for the maintenance button
+GLOBAL BOOL bHmiToolChange=FALSE ;flag for the maintenance button
+GLOBAL BOOL bHmiCleaningPosition=FALSE ;flag for cleaning button
+
+GLOBAL INT nHmiHomeAns=2 ;response to home message
+GLOBAL INT nHmiWarmupAns=4 ;response to warmup message
+GLOBAL INT nHmiMaintenanceAns=0 ;response to maintenance message
+GLOBAL INT nHmiToolChangeAns=0 ;response to maintenance message
+GLOBAL INT nHmiCleaningAns=0 ;flag for cleaning button
+
+GLOBAL BOOL bHmiHomeRobot=FALSE
+GLOBAL INT nHmiHomeRobotAns=0
+
+ENDDAT

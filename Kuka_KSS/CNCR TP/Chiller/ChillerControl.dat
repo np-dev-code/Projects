@@ -1,0 +1,14 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&REL 14
+DEFDAT  CHILLERCONTROL PUBLIC
+
+GLOBAL BOOL bRequestChiller=FALSE
+GLOBAL BOOL bChillerRunning=TRUE
+
+GLOBAL BOOL bChillerMessage=TRUE ;for triggering air message
+
+
+ENDDAT

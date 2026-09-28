@@ -1,0 +1,40 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&REL 243
+DEFDAT  CEADMSGS PUBLIC
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 01/03/23
+;     Version: 0.0.26
+;************************************************
+; Description: Dat file to store data for the 
+; printer.
+;************************************************
+
+DECL GLOBAL CNCRMessage CeadMsg[13]
+
+;GLOBAL STRUC CNCRMessage int nNo, char strName[24], char strMsg[48],nBOOL bDisplayFlag
+
+CeadMsg[1]={nNo 1,strName[] "CEAD",strMsg[] "Heatzone error has occurred",bDisplayFlag FALSE}
+CeadMsg[2]={nNo 2,strName[] "CEAD",strMsg[] "Servo error has occurred.",bDisplayFlag FALSE}
+CeadMsg[3]={nNo 3,strName[] "CEAD",strMsg[] "Transport error has occurred.",bDisplayFlag FALSE}
+CeadMsg[4]={nNo 4,strName[] "CEAD",strMsg[] "CEAD system in E-stop.",bDisplayFlag TRUE}
+CeadMsg[5]={nNo 5,strName[] "CEAD",strMsg[] "Servo utilisation is over 95%, the program will stop in 60 seconds.",bDisplayFlag FALSE}
+CeadMsg[6]={nNo 6,strName[] "CEAD",strMsg[] "The capacity sensors have not detected material for more than 60s.",bDisplayFlag FALSE}
+CeadMsg[7]={nNo 7,strName[] "CEAD",strMsg[] "The capacity sensors the base unit does not detect material.",bDisplayFlag FALSE}
+CeadMsg[8]={nNo 8,strName[] "CEAD",strMsg[] "The operating mode of the base unit is set to HMI.",bDisplayFlag FALSE}
+CeadMsg[9]={nNo 9,strName[] "CEAD",strMsg[] "The Extruder torque is over 95%, the program will stop in 60 seconds.",bDisplayFlag FALSE}
+CeadMsg[10]={nNo 10,strName[] "CEAD",strMsg[] "The filter needs cleaning or replacing, has this been performed?",bDisplayFlag FALSE}
+CeadMsg[11]={nNo 11,strName[] "CEAD",strMsg[] "Reserved for warmup timer.",bDisplayFlag FALSE}
+CeadMsg[12]={nNo 12,strName[] "CEAD",strMsg[] "The CEAD cooling system is in error.",bDisplayFlag FALSE}
+
+GLOBAL INT nFilterAns=0
+
+ENDDAT

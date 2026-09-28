@@ -1,0 +1,36 @@
+&ACCESS RV8
+&REL 35
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF CowlUp( )
+;FOLD INI
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.18.54
+;************************************************
+; Description: Routine to lock the spindle
+;************************************************
+
+CheckEOATooling(#SPINDLE)
+
+WAIT FOR (iAirOK)
+
+oHoodDown = FALSE
+oHoodUp = TRUE
+
+WAIT FOR iHoodUp==TRUE
+END

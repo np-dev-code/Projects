@@ -1,0 +1,79 @@
+&ACCESS RVO
+&REL 32
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1
+DEF RobotWarmup( )
+DECL INT _nAns
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+    _nAns = 0
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.21.54
+;************************************************
+; Description: Routine to warm up the robot
+;************************************************
+
+; Warning message to the user before warmup starts
+MsgDialog(_nAns,"Ensure the robot is in a clear area and wont crash during warm-up.","Robot",,,,,,,"Exit","Continue", FALSE, nRobotMsg + 6, E_progCommonMsgOpt)
+
+IF (_nAns == 1) THEN
+   _nAns = 0
+ELSE
+	RETURN
+ENDIF
+
+;Loop until A1 motor is above 314 degrees kelvin
+LOOP
+
+;Move to home
+;FOLD PTP HOME CONT Vel=100 % DEFAULT ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=HOME; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=DEFAULT; Kuka.VelocityPtp=100; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PDEFAULT
+FDAT_ACT = FHOME
+BAS(#PTP_PARAMS, 100.0)
+SET_CD_PARAMS (0)
+PTP XHOME C_Dis
+;ENDFOLD
+
+;Move to other position of warmup
+;FOLD PTP P1 CONT Vel=100 % PDAT1 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=True; Kuka.MoveDataPtpName=PDAT1; Kuka.VelocityPtp=100; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT1
+FDAT_ACT = FP1
+BAS(#PTP_PARAMS, 100.0)
+SET_CD_PARAMS (0)
+PTP XP1 C_Dis
+;ENDFOLD
+  
+	;When A1 motor temp reaches 314 degrees, end warmup and move home
+	IF ($MOT_TEMP[1] >314) THEN
+		MsgNotify("Robot warmup complete.", "Robot",,, nRobotMsg + 7, E_progNotifyMsgOpt)
+		HomePosition()
+		RETURN
+	ENDIF
+
+ENDLOOP
+
+END

@@ -1,0 +1,50 @@
+&ACCESS RVO6
+&REL 14
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF ToolUnlock( )
+;FOLD INI
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              Unit 3
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.18.54
+;************************************************
+; Description: Routine to unlock the spindle
+;************************************************
+
+
+CheckEOATooling(#SPINDLE)
+
+;Wait for air pressure OK
+WAIT FOR (iAirOK)
+
+;Cancel tool lock and cone clear
+;oToolLock = FALSE
+;oConeClear = TRUE   
+
+;Call for spindle to unlock
+oToolUnlock1 = TRUE
+oToolUnlock2 = TRUE
+
+;Time delay
+WAIT SEC 1
+
+;Wait for spindle unlocked
+WAIT FOR (NOT iToolLocked)
+WAIT FOR (iOpenCollet) 
+
+END

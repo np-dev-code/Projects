@@ -1,0 +1,58 @@
+&ACCESS RVP
+&REL 31
+&PARAM DISKPATH = KRC:\R1\Program\CNCRobotics\CEAD
+DEF ManualPurge( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+GLOBAL INTERRUPT DECL 4 WHEN bCeadInterrupt==TRUE DO CeadInterrupt ( )
+INTERRUPT ON 4
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.18.51
+;************************************************
+; Description: Routine to have the robot move to the
+; purge position, purge for a time and then return
+; to home.
+;************************************************
+
+;Start by moving robot to the home position
+;HomePosition()
+PTP $POS_ACT
+;Motion to move the robot to the purge position
+PurgePosition()
+;Set extruder perameters
+rPumpTime = 30   ;Time(seconds) pump will pull material to the hopper 
+rShotSize = 1.0 ;Time(seconds) the pinch valve will open, allowing material through 
+SetPelletSource (#DRYER) ;Set the source of material as the dryer
+
+SetHeatZones (rTempSet1,rTempSet2,rTempSet3,rTempSet4) ;Set heatzones to previous values
+
+TransportOn()  ;Start transport system
+WaitForReady() ;Wait for heatzsones up to temperature and 10 min timer
+
+RotationOn()   ;Start extruding
+SetScrewSpeed(50);Set extruder speed to 50RPM
+
+WAIT SEC 30	;Allow extrusion to continue for 20 seconds
+
+;Stop Extruding 
+SetScrewSpeed(0)
+RotationOff()
+
+;Return robot to home position
+HomePosition()
+
+END

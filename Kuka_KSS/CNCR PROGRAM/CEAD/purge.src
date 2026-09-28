@@ -1,0 +1,53 @@
+&ACCESS RVP
+&REL 29
+&PARAM DISKPATH = KRC:\R1\Program\CNCRobotics\CEAD
+DEF Purge( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+GLOBAL INTERRUPT DECL 4 WHEN bCeadInterrupt==TRUE DO CeadInterrupt ( )
+INTERRUPT ON 4
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.18.51
+;************************************************
+; Description: Routine to purge the robot before 
+; it begins a print. Robot will not return home 
+; after the purge.
+;************************************************
+
+;Start by moving robot to the home position
+;HomePosition()
+PTP $POS_ACT
+
+;Motion to move the robot to the purge position
+PurgePosition ()
+
+TransportOn()  ;Start transport system
+WaitForReady() ;Wait for heatzsones up to temperature and 10 min timer
+
+RotationOn()   ;Start extruding
+SetScrewSpeed(50);Set extruder speed to 50RPM
+
+WAIT SEC 30	;Allow extrusion to continue for 20 seconds
+
+;Stop Extruding 
+SetScrewSpeed(0)
+RotationOff()
+
+WAIT SEC 1
+
+
+END

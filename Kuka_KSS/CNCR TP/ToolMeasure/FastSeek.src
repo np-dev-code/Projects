@@ -1,0 +1,43 @@
+&ACCESS RVO1
+&REL 18
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\NEW DEV
+DEF FastSeek( )
+
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: Program to seek towards the measure
+; sensor at fast speed
+;************************************************
+
+;FOLD INI;%{PE}
+;ENDFOLD (INI)
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+	;BAS (#INITMOV,0 )
+;ENDFOLD (BASISTECH INI)
+
+
+CheckEOATooling(#SPINDLE)
+;INTERRUPT DECL 10 WHEN $TOOL_MEASURE_GOOD==FALSE DO SUB_STOP ()
+$VEL.CP = 0.005
+;INTERRUPT ON 10 
+
+MsgNotify("Fast seek in progress...", "ToolMeasure",,, nMeasureMsg + 8, E_progNotifyMsgOpt)
+
+;Plung move toward the measure sensor
+LIN_REL {Z -335}
+
+;Set advance to 0
+$ADVANCE=0
+
+END

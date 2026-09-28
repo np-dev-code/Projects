@@ -1,0 +1,17 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 154
+DEFDAT  AIRSENSORSPS PUBLIC
+
+;To Be included in the CNCRSignals Folder
+;digital inputs 
+;GLOBAL SIGNAL iAirOK $IN[1] ;Air ok pressure switch 
+
+
+GLOBAL BOOL bAirMessage=TRUE ;for triggering air message
+GLOBAL BOOL bAirInterrupt=FALSE ; Interrupt Flag when a problem with air messages
+GLOBAL BOOL bAirConfirmed=FALSE
+ENDDAT

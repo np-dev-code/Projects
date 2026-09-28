@@ -1,0 +1,167 @@
+&ACCESS RVO
+&REL 22
+&COMMENT USER specified PLC program
+&PARAM DISKPATH = KRC:\R1\TP\CNCR TP\ToolMeasure
+DEF  ToolMeasureHmi ( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.13.46
+;************************************************
+; Description: sps for controlling the hmis
+;************************************************
+
+IF ($PRO_STATE1 == #P_FREE) THEN
+   
+	;If calculate is pressed, the TCP will be calculated and written to the selected tool
+    IF (bHmiWrite) THEN
+		MsgDialog(nHmiWriteAns,"The new tool length will now create a TCP for the seleted tool.","ToolMeasure",,,,,,,"Cancel","Continue", FALSE, nMeasureMsg, E_spsMsgOpt)
+        bHmiWrite = FALSE
+    ENDIF
+    
+    IF (nHmiWriteAns == 1) THEN
+        TipCalc()
+        TOOL_DATA[nHmiToolMeasureSelection] = frTipActual
+        rOldToolLength[nToolHeld] = rToolLength
+        nHmiWriteAns = 0
+    ENDIF
+   
+    ;If measure is pressed, call the MeasureTool() routine
+    IF (bHmiMeasure) THEN
+        MsgDialog(nHmiMeasureAns,"The selected tool will be measured, please ensure it is under 300mm.","ToolMeasure",,,,,,,"Cancel","Continue", FALSE, nMeasureMsg + 1, E_spsMsgOpt)
+        bHmiMeasure = FALSE
+    ENDIF
+    
+    IF (nHmiMeasureAns == 1) THEN
+        CWRITE($CMD,E_stat,E_mode,"RUN/R1/MeasureTool()")
+        nHmiMeasureAns = 0
+    ENDIF
+   
+    ;If the top collect is pressed, save the short spike TCP data to the selected index 
+    IF (bHmiShortCollect) THEN
+        MsgDialog(nHmiShortCollectAns,"The TCP data for tool 19 will now be saved to the selected short spike.","ToolMeasure",,,,,,,"Cancel","Continue", FALSE, nMeasureMsg + 2, E_spsMsgOpt)
+        bHmiShortCollect = FALSE
+    ENDIF
+    
+    IF (nHmiShortCollectAns == 1) THEN
+        vecShortSpike[nShortSpikeSelection] = VecFromFrame(TOOL_DATA[SHORT_SPIKE])
+        nHmiShortCollectAns = 0
+    ENDIF
+    
+    ;If the bottom row collect 1st is pressed, save the long spike TCP data to index 1
+    IF (bHmiLongCollect) THEN
+        MsgDialog(nHmiLongCollectAns,"The TCP data for tool 20 will now be saved to the selected long spike.","ToolMeasure",,,,,,,"Cancel","Continue", FALSE, nMeasureMsg + 3, E_spsMsgOpt)
+        bHmiLongCollect = FALSE
+    ENDIF
+    
+    IF (nHmiLongCollectAns == 1) THEN
+        vecLongSpike[nLongSpikeSelection] = VecFromFrame(TOOL_DATA[LONG_SPIKE])
+        nHmiLongCollectAns = 0
+    ENDIF
+      
+    ;If the calculate button is pressed, calculate the head attach point of the spindle  
+    IF (bHmiHeadCalc) THEN  
+        MsgDialog(nHmiHeadCalcAns,"Head attach point will now be created using stored long and short spike data.","ToolMeasure",,,,,,,"Cancel","Continue", FALSE, nMeasureMsg + 4, E_spsMsgOpt)
+        bHmiHeadCalc = FALSE
+    ENDIF
+    
+    IF (nHmiHeadCalcAns == 1) THEN
+        ;rToolLength = 0.0000000001
+        TipCalc()
+		;frHeadAttach = frTipActual
+        MsgNotify("Head attach point has been updated.", "ToolMeasuring",,, nMeasureMsg + 16, E_progNotifyMsgOpt)
+        nHmiHeadCalcAns = 0
+    ENDIF
+ENDIF
+    
+IF (nToolHeld <> 0) THEN
+   frHmiCurrentTCP = TOOL_DATA[nToolHeld]
+ELSE
+   frHmiCurrentTCP = $NULLFRAME
+ENDIF
+   
+IF (nHmiToolMeasureSelection <> 0) THEN
+   frHmiSelectedTCP = TOOL_DATA[nHmiToolMeasureSelection]
+ELSE
+   frHmiSelectedTCP = $NULLFRAME
+ENDIF
+    
+;Count to only check every 500 cycles
+IF (nHmiLoopCount > 1000) THEN
+      
+    ;Check if the 3 short spike measures are in range and display on the LED
+    IF (shortSpikeCheck(rSpikeTolerance)) THEN 
+      bHmiShortInRange = TRUE
+    ELSE 
+      bHmiShortInRange = FALSE
+      MsgNotify("Short spikes out of range.", "ToolMeasuring",,, nMeasureMsg + 17, E_progNotifyMsgOpt)
+    ENDIF
+      
+    ;Check if the 3 long spike measures are in range and display on the LED
+    IF (longSpikeCheck(rSpikeTolerance)) THEN 
+      bHmiLongInRange = TRUE
+    ELSE 
+      bHmiLongInRange = FALSE
+      MsgNotify("Long spikes out of range.", "ToolMeasuring",,, nMeasureMsg + 18, E_progNotifyMsgOpt)
+    ENDIF
+    nHmiLoopCount = 0                   ;clear count
+  ELSE 
+    nHmiLoopCount = nHmiLoopCount + 1   ;increment count 
+  ENDIF
+END
+
+
+
+DEFFCT BOOL shortSpikeCheck (tol :IN)
+
+  DECL REAL _difference12
+  DECL REAL _difference13
+  DECL REAL _difference23
+  DECL REAL tol
+  ;calculate distance between 1st and 2nd short spike measures
+  _difference12 = SQRT(((vecShortSpike[1].X - vecShortSpike[2].X) * (vecShortSpike[1].X - vecShortSpike[2].X) + (vecShortSpike[1].Y - vecShortSpike[2].Y) * (vecShortSpike[1].Y - vecShortSpike[2].Y) + (vecShortSpike[1].Z - vecShortSpike[2].Z) * (vecShortSpike[1].Z - vecShortSpike[2].Z)))
+  
+  ;calculate distance between 1st and 3rd short spike measures
+  _difference13 = SQRT(((vecShortSpike[1].X - vecShortSpike[3].X) * (vecShortSpike[1].X - vecShortSpike[3].X) + (vecShortSpike[1].Y - vecShortSpike[3].Y) * (vecShortSpike[1].Y - vecShortSpike[3].Y) + (vecShortSpike[1].Z - vecShortSpike[3].Z) * (vecShortSpike[1].Z - vecShortSpike[3].Z)))
+ 
+  ;calculate distance between 2nd and 3rd short spike measures
+  _difference23 = SQRT(((vecShortSpike[3].X - vecShortSpike[2].X) * (vecShortSpike[3].X - vecShortSpike[2].X) + (vecShortSpike[3].Y - vecShortSpike[2].Y) * (vecShortSpike[3].Y - vecShortSpike[2].Y) + (vecShortSpike[3].Z - vecShortSpike[2].Z) * (vecShortSpike[3].Z - vecShortSpike[2].Z)))
+
+  ;If within 0.5mm of eachother, return TRUE
+  IF ((_difference12 < tol) AND (_difference13 < tol) AND (_difference23 < tol) ) THEN
+    RETURN TRUE
+  ELSE 
+    RETURN FALSE
+  ENDIF 
+  
+ENDFCT
+ 
+ 
+DEFFCT BOOL longSpikeCheck (tol: IN)
+
+  DECL REAL _difference12
+  DECL REAL _difference13
+  DECL REAL _difference23
+  DECL REAL tol
+
+  ;calculate distance between 1st and 2nd long spike measures 
+  _difference12 = SQRT(((vecLongSpike[1].X - vecLongSpike[2].X) * (vecLongSpike[1].X - vecLongSpike[2].X) + (vecLongSpike[1].Y - vecLongSpike[2].Y) * (vecLongSpike[1].Y - vecLongSpike[2].Y) + (vecLongSpike[1].Z - vecLongSpike[2].Z) * (vecLongSpike[1].Z - vecLongSpike[2].Z)))
+  
+  ;calculate distance between 1st and 3rd long spike measures
+  _difference13 = SQRT(((vecLongSpike[1].X - vecLongSpike[3].X) * (vecLongSpike[1].X - vecLongSpike[3].X) + (vecLongSpike[1].Y - vecLongSpike[3].Y) * (vecLongSpike[1].Y - vecLongSpike[3].Y) + (vecLongSpike[1].Z - vecLongSpike[3].Z) * (vecLongSpike[1].Z - vecLongSpike[3].Z)))
+  
+  ;calculate distance between 2nd and 3rd long spike measures
+  _difference23 = SQRT(((vecLongSpike[3].X - vecLongSpike[2].X) * (vecLongSpike[3].X - vecLongSpike[2].X) + (vecLongSpike[3].Y - vecLongSpike[2].Y) * (vecLongSpike[3].Y - vecLongSpike[2].Y) + (vecLongSpike[3].Z - vecLongSpike[2].Z) * (vecLongSpike[3].Z - vecLongSpike[2].Z)))
+  
+  ;If within 0.5mm of eachother, return TRUE
+  IF ((_difference12 < tol) AND (_difference13 < tol) AND (_difference23 < tol)) THEN
+    RETURN TRUE
+  ELSE 
+    RETURN FALSE
+  ENDIF 
+ 
+ENDFCT

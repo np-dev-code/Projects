@@ -1,0 +1,14 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 9
+DEFDAT  CHILLERHMI PUBLIC
+
+GLOBAL BOOL bHmiChillerOn=FALSE
+GLOBAL INT nHmiChillerOnAns=0
+GLOBAL BOOL bHmiChillerOff=FALSE
+GLOBAL INT nHmiChillerOffAns=0
+GLOBAL BOOL bHmiChillerReset=FALSE
+
+ENDDAT

@@ -1,0 +1,38 @@
+&ACCESS  RV
+&COMMENT USER specified PLC program
+&PARAM DISKPATH = KRC:\R1\TP\CNCR TP\ToolMeasure
+&REL 22
+DEFDAT  TOOLMEASUREHMI PUBLIC
+
+;Tool Measuring HMI variables
+;Tool Measuring page
+GLOBAL INT nHmiToolMeasureSelection=4 ;for storing old length for HMI
+GLOBAL BOOL bHmiMeasure=FALSE ;flag for the measure button
+GLOBAL INT nHmiMeasureAns=0 ;response to measure message
+GLOBAL BOOL bHmiWrite=FALSE ;flag for the calculate button
+GLOBAL INT nHmiWriteAns=0 ;response to write message
+GLOBAL FRAME frHmiCurrentTCP={X 0.0,Y 0.0,Z 0.0,A 0.0,B 0.0,C 0.0} ;for storing the current tool TCP
+GLOBAL FRAME frHmiSelectedTCP={X 386.171,Y 1.82870042,Z 467.569885,A 0.0,B -89.9754868,C -0.0351167284}
+
+;Spindle calibration page
+GLOBAL FRAME frShortSpike[3]
+frShortSpike[1]={X 186.680,Y -0.180000,Z 136.810,A 0.0,B 0.0,C 0.0}
+frShortSpike[2]={X 354.100,Y 0.130000,Z 136.710,A 0.0,B 0.0,C 0.0}
+frShortSpike[3]={X 353.800,Y 0.110000,Z 136.790,A 0.0,B 0.0,C 0.0}
+GLOBAL FRAME frLongSpike[3]
+frLongSpike[1]={X 564.190,Y 1.52000,Z 135.870,A 0.0,B 0.0,C 0.0}
+frLongSpike[2]={X 564.330,Y 1.30000,Z 135.770,A 0.0,B 0.0,C 0.0}
+frLongSpike[3]={X 564.020,Y 1.21000,Z 135.910,A 0.0,B 0.0,C 0.0}
+GLOBAL INT nShortSpikeSelection=1 ;decides which short spike data is read/written to
+GLOBAL INT nLongSpikeSelection=1 ;decides which long spike data is read/written to
+GLOBAL BOOL bHmiShortInRange=TRUE ;flag for the short in range LED
+GLOBAL BOOL bHmiLongInRange=TRUE ;flag for the long in range LED
+GLOBAL BOOL bHmiShortCollect=FALSE ;flag for the 1st short collect button
+GLOBAL INT nHmiShortCollectAns=0 ;response to write message
+GLOBAL BOOL bHmiLongCollect=FALSE ;flag for the 1st long collect button
+GLOBAL INT nHmiLongCollectAns=0 ;response to write message
+GLOBAL BOOL bHmiHeadCalc=FALSE ;flag for the calculate button
+GLOBAL INT nHmiHeadCalcAns=0 ;response to write message
+GLOBAL INT nHmiLoopCount=282 ;count to slow the cheking of in-range flags
+GLOBAL REAL rSpikeTolerance=1.00000
+ENDDAT

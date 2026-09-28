@@ -1,0 +1,22 @@
+&ACCESS RVEO
+&REL 7
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCRobotics\CEAD
+DEF PrintSafe( )
+;************************************************
+;              CNC Robotics Ltd
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 04/06/24
+;     Version: 0.0.0
+;************************************************
+; Description: Routine to move the robot to the 
+; print safe position. This position should be used
+; as an intermediate position between home and the 
+; print bed or the purge position and the print bed
+; which can be used for safe transition.
+;************************************************
+
+
+END

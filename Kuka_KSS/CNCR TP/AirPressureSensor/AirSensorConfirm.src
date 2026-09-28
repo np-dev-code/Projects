@@ -1,0 +1,22 @@
+&ACCESS RVO1
+&REL 32
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF AirSensorConfirm( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.18.54
+;************************************************
+; Description: Routine to Confirm Vacuum is present
+;************************************************
+
+   SensorWait( iAirOK, 1 , 0.01)
+   bAirConfirmed = TRUE
+
+END
+

@@ -1,0 +1,30 @@
+&ACCESS RV1
+&REL 3
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF PrimeCead( )
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+PTP $POS_ACT
+
+rPumpTime = 30   ;Time(seconds) pump will pull material to the hopper 
+rShotSize = 1.0 ;Time(seconds) the pinch valve will open, allowing material through 
+SetPelletSource (#DRYER) ;Set the source of material as the dryer
+
+SetHeatZones (240,255,260,260) ;Set heatzones to previous values
+
+TransportOn()  ;Start transport system
+WaitForReady() ;Wait for heatzsones up to temperature and 10 min timer
+
+RotationOn()   ;Start extruding
+SetScrewSpeed(0)
+END

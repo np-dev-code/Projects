@@ -1,0 +1,37 @@
+&ACCESS RVE
+&REL 156
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF RobotSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.23.48
+;************************************************
+; Description: sps control specific for the spindle.
+;************************************************
+  
+
+
+
+IF $T1 THEN 
+   oMode = 0;
+ENDIF
+IF $T2 THEN 
+   oMode = 1;
+ENDIF
+IF $AUT THEN 
+   oMode = 2;
+ENDIF
+IF $EXT THEN 
+   oMode = 3;
+ENDIF
+
+bDoorFault = ($AUT OR $EXT) AND (NOT iDoorSignal)
+
+END

@@ -1,0 +1,52 @@
+&ACCESS RVP15
+&REL 27
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\FunctionVorgabe
+DEF ToolrackMove(_nNewPosition :IN )
+INT _nNewPosition
+BOOL _bExitFlag
+INT _nAnswer
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 1.12.46
+;************************************************
+; Description: Move the tool rack to the newly
+; requested position.
+;************************************************
+
+;If new position is outside range, error out
+IF ( (_nNewPosition <1)  OR (_nNewPosition > MAX_TOOL_NO)) THEN
+    LOOP
+		MsgDialog(_nAnswer,"WARNING: Tool rack is trying to reach a position out of range!","AutoToolChange",,,,,,,,"Ok", TRUE, nAutoToolChangeMsg + 9, E_progCommonMsgOpt)
+        HALT
+    ENDLOOP
+ENDIF
+
+;If first use since power on, home tool changer
+IF (bReqToolRackHome) THEN
+    ToolrackHome( )
+    bReqToolRackHome = FALSE
+ENDIF
+
+IF (NOT iToolrackReferenceValid) THEN
+    ToolRackHome( )
+ENDIF
+
+;Continue process until a TRUE is returned as motion is complete
+_bExitFlag = FALSE
+
+WHILE NOT(_bExitFlag)
+    IF (ToolrackProg (_nNewPosition)) THEN
+		nToolRackPosition = _nNewPosition
+        _bExitFlag = TRUE
+    ENDIF
+ENDWHILE
+
+MsgNotify("Tool rack has reached position %1...", "AutoToolChange",_nNewPosition,, nAutoToolChangeMsg+10, E_progNotifyMsgOpt)
+
+END

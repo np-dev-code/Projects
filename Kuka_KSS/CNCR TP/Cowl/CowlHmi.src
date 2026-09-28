@@ -1,0 +1,35 @@
+&ACCESS RVO14
+&REL 15
+&COMMENT USER specified PLC program
+DEF  CowlHmi ( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps for controlling the hmis
+;************************************************
+
+;SYSTEM HMI PAGE
+    
+
+IF (bHmiCowlUp) THEN
+   bHmiCowlUp = FALSE
+   oHoodDown = FALSE
+   oHoodUp = TRUE
+ENDIF
+
+IF (bHmiCowlDown) THEN
+   bHmiCowlDown = FALSE
+   oHoodUp = FALSE
+   oHoodDown = TRUE
+ENDIF
+
+END
+
+
+;ENDFOLD (USER SUBROUTINE)

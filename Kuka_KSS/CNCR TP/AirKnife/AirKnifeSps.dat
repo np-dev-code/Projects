@@ -1,0 +1,15 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 156
+DEFDAT  AIRKNIFESPS PUBLIC
+
+GLOBAL BOOL bAirKnife=FALSE
+GLOBAL BOOL bAirBlastStart=FALSE
+GLOBAL BOOL bAirBlastComp=TRUE
+GLOBAL BOOL bAirBlastOn=TRUE
+GLOBAL INT nAirBlastOnTime=5000000
+GLOBAL INT nAirBlastPeriod=500000
+
+ENDDAT

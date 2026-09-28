@@ -1,0 +1,27 @@
+&ACCESS RV
+&REL 153
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF AutoChangeToolSps(  )
+
+;************************************************
+;              CNC Robotics Ltd
+;              Unit 3
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.17.54
+;************************************************
+; Description: sps control specific for AutoChange Tool
+;************************************************
+  
+
+;for no tool unlock whilst spindle is running
+IF (oSpindleOn) THEN    ; spindle state is true
+   oToolUnlock1 = FALSE	     ; tool unlock1 state false 
+   oToolUnlock2 = FALSE	     ; tool unlock2 state false
+ENDIF
+
+END

@@ -1,0 +1,69 @@
+&ACCESS RVO
+&REL 188
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF FlexxPumpHmi( )
+; CNC ROBOTICS LTD submit program
+;(Roboter SPS)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/12/23
+;     Version: 1.15.52
+;************************************************
+; Description: sps for controlling the Flexxpump 
+;              on Gudel Tracks
+;************************************************
+
+DECL KrlMsg_t _msg
+
+rHmiTrackDistance=rTrackDistance/1000.0
+rHmiMaxTrackDistance=rMaxTrackDistance/1000.0
+
+IF ($PRO_STATE1 == #P_FREE) THEN
+	IF (bApplyLubrication) THEN
+		MsgDialog(nApplyLubricationAns,"This will Activate the Flexx Pump to lubricate the track.","TRACK",,,,,,,"Cancel","Continue", FALSE, nTrackMsgs + 1, E_spsMsgOpt)
+		bApplyLubrication = FALSE
+    ENDIF
+    
+    IF (nApplyLubricationAns == 1) THEN
+		oTrackLubrication = TRUE
+		$TIMER_STOP[LUBE_TIMER] = TRUE
+		$TIMER[LUBE_TIMER] = LUBE_TIME
+		rTrackDistance = 0
+		MsgNotify("Track Lubrication run. Ensure the robot is run on the extent of the track", "TRACK",,, nTrackMsgs + 2, E_progNotifyMsgOpt)
+		nApplyLubricationAns = 0 
+    ENDIF
+    
+    IF (NOT iLubeFeedback) AND oTrackLubrication THEN
+        $TIMER_STOP[LUBE_TIMER] = FALSE
+    ELSE 
+        $TIMER_STOP[LUBE_TIMER] = TRUE
+        oTrackLubrication = FALSE
+        bLubeFault = FALSE
+    ENDIF
+   
+    IF $TIMER_FLAG[LUBE_TIMER] THEN
+        $TIMER_STOP[LUBE_TIMER] = TRUE
+        $TIMER[LUBE_TIMER] = LUBE_TIME
+        bLubeFault = TRUE
+        MsgNotify("Feedback from track lube not observed. Lubrication of track failed.", "TRACK",,, nTrackMsgs + 3, E_progNotifyMsgOpt)
+    ENDIF
+    
+    IF (bHmiLubricateRun) THEN
+        MsgDialog(nHmiLubricateRunAns,"This program will move the robot along the extremes of the track.","TRACK",,,,,,,"Cancel","Continue", FALSE, nTrackMsgs + 4, E_spsMsgOpt)
+        bHmiLubricateRun = FALSE
+    ENDIF
+    
+    IF (nHmiLubricateRunAns == 1) THEN
+        CWRITE($CMD,E_stat,E_mode,"RUN/R1/LubricateTrack()")
+         CWRITE($CMD,E_stat,E_mode,"STOP 1")
+        nHmiLubricateRunAns = 0
+    ENDIF
+ENDIF
+
+END

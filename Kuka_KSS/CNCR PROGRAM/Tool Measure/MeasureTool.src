@@ -1,0 +1,162 @@
+&ACCESS RVP
+&REL 187
+&PARAM DISKPATH = KRC:\R1\Program\CNCR\CNCR_SUB\TOOL_MEASURE
+DEF  MeasureTool ()
+DECL INT _nOffset
+DECL INT _nAnswer
+DECL FRAME _frTempFrame
+DECL INT _nLengthAns
+DECL INT _nToolLength
+DECL INT _nExitAns
+DECL CHAR _strLengthCheck[50]
+DECL CHAR _strFinalCheck[100]
+DECL FRAME _tempFrame
+DECL CHAR _strTempText[80]
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 0.20.54
+;************************************************
+; Description: Program to have robot measure its
+; currently held tool.
+;************************************************
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    GLOBAL INTERRUPT DECL 12 WHEN iToolMeasureLimit == FALSE DO SeekError ( )
+    INTERRUPT ON 12
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+   _nAnswer = -1
+   _nExitAns = -1
+   _nLengthAns = -1
+   _nToolLength = -1
+   _nOffset = 0
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;PTP $POS_ACT
+
+;check robot is at home first
+;IF NOT $IN_HOME THEN
+;   REPEAT
+;      MsgDialog(_nAnswer,"Robot not in home position, is it safe to move there now?", "ToolMeasure",,,,,,,"No","Yes",, nMeasureMsg + 14,E_progCommonMsgOpt)
+   ;   IF (_nAnswer <> 1) THEN
+   ;      MsgDialog(_nAnswer,"Please move the robot to a safe position where it can return home.", "ToolMeasure",,,,,,,"Ok",,, nMeasureMsg + 15,E_progCommonMsgOpt)
+   ;      HALT
+ ;     ENDIF
+ ;  UNTIL (_nAnswer == 1)
+;ENDIF
+
+_nAnswer = -1
+
+;start the tool measurement from the home position 
+;HomePosition()
+
+IF (nToolHeld <> nHmiToolMeasureSelection) THEN
+MsgDialog(_nAnswer,"Selected tool not held by robot. Swap tools now?", "ToolMeasure",,,,,,,"No","Yes",, nMeasureMsg + 16,E_progCommonMsgOpt)
+
+IF (_nAnswer == 1) THEN
+   ToolTake(nHmiToolMeasureSelection)
+ENDIF
+ENDIF
+
+
+WAIT FOR STRCLEAR(_strTempText[])
+WAIT FOR STRCLEAR(_strLengthCheck[])
+
+MsgNotify("Tool measuring process started...", "ToolMeasure",,, nMeasureMsg + 5, E_progNotifyMsgOpt)
+
+;Request approximate tool length
+
+REPEAT 
+
+_strLengthCheck[] = "0"
+
+MsgDialog(_nLengthAns, "What length is the new tool? (Rounded up to nearest 40mm)", "ToolMeasure",,,"300","260","220","180","140","100",, nMeasureMsg + 6,E_progCommonMsgOpt)
+   
+_nOffset = 0
+_nToolLength = 60 + (_nLengthAns * 40)
+SWRITE(_strLengthCheck[],E_stat,_nOffset,"%dmm has been selected, is this correct?",_nToolLength)
+   
+MsgDialog(_nExitAns, _strLengthCheck[], "ToolMeasure",,,,,,,"No","Yes",, nMeasureMsg + 7,E_progCommonMsgOpt)
+   
+UNTIL (_nExitAns == 1)
+
+;Take the correct tool
+;ToolTake(_nNewTool)
+
+;START FROM MEASURE SAFE.
+rToolLength = 0
+MeasureSafe()
+
+TOOL_DATA[HEAD_ATTACH] = frHeadAttach
+$TOOL = TOOL_DATA[HEAD_ATTACH] 
+$ACT_TOOL = HEAD_ATTACH
+$LOAD = LOAD_DATA[HEAD_ATTACH]
+BASE_DATA[TOOL_MEASURE+1] = BASE_DATA[TOOL_MEASURE]
+BASE_DATA[TOOL_MEASURE+1].Y = BASE_DATA[TOOL_MEASURE].Y + $POS_ACT.E1
+$BASE = BASE_DATA[TOOL_MEASURE+1]
+$ACT_BASE = TOOL_MEASURE
+$ADVANCE=1
+
+;move rapid pos
+$VEL.CP = 0.4
+_frTempFrame = {X 105,Y 37, Z 650.000, A 130.000, B 00.000, C 0.000}
+_frTempFrame.z = (_nToolLength + rSensorHeight + 30)
+
+LIN _frTempFrame
+
+;Call the seek and set the interrupt to on. 
+
+INTERRUPT DECL 10 WHEN iToolMeasureGood == FALSE DO SubStop ()
+
+INTERRUPT ON 10
+FastSeek ()
+INTERRUPT OFF 10
+
+LIN_REL {Z 5}
+WAIT SEC 0
+
+INTERRUPT ON 10
+SlowSeek ()
+INTERRUPT OFF 10
+
+$VEL.CP = 0.4
+LIN_REL {Z 40}
+
+MsgNotify("Tool measuring process completed...", "ToolMeasure",,, nMeasureMsg + 12, E_progNotifyMsgOpt)
+
+;measure tool.. 
+rToolLength = rGrossToolLength - rSensorHeight
+rToolLength = rToolLength + rToolError
+_nOffset = 0
+
+SWRITE (_strTempText[], E_stat, _nOffset, "Old tool length: %3.2fmm, new tool length: %3.2fmm, overwrite data?",rOldToolLength[nToolHeld], rToolLength)
+
+MsgDialog(_nAnswer, _strTempText[],"ToolMeasure",,,,,,, "Cancel","Write", TRUE, nMeasureMsg + 13, E_progCommonMsgOpt)
+
+WAIT SEC 0
+IF (_nAnswer == 1) THEN
+   TipCalc()
+   TOOL_DATA[nToolHeld] = frTipActual
+   rOldToolLength[nToolHeld] = rToolLength
+ENDIF
+   
+;return to the measurment safe position. 
+MeasureSafe ()
+
+;end the tool measurement at the the home position 
+HomeRobot()
+$ADVANCE=3
+
+END

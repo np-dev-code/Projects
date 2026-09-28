@@ -1,0 +1,55 @@
+&ACCESS RVO6
+&REL 43
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\Tool Carousel
+DEF AwayChanger( )
+DECL REAL _rYPos
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.14.49
+;************************************************
+; Description: Program to move robot to position 
+; away from the tool changer
+;************************************************
+
+
+CheckEOATooling(#SPINDLE)
+
+;PTP $POS_ACT
+
+_rYPos = XP1.Y - XP1.E1
+
+XP1.E1 = $POS_ACT.E1
+XP1.Y = XP1.E1 + _rYPos
+
+;Away from tool position on the carousel
+;FOLD LIN P1 Vel=0.2 m/s CPDAT2 Tool[31]:NULL_SPINDLE Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=False; Kuka.PointName=P1; Kuka.BlendingEnabled=False; Kuka.MoveDataName=CPDAT2; Kuka.VelocityPath=0.2; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=LIN
+;ENDFOLD
+$BWDSTART = FALSE
+LDAT_ACT = LCPDAT2
+FDAT_ACT = FP1
+BAS(#CP_PARAMS, 0.2)
+SET_CD_PARAMS (0)
+LIN XP1
+;ENDFOLD
+
+END

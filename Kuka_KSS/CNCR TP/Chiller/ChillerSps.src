@@ -1,0 +1,36 @@
+&ACCESS RVO
+&REL 120
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF ChillerSps(_bFault:OUT )
+DECL BOOL _bFault
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.13.48
+;************************************************
+; Description: Sps to control the Chiller.
+;************************************************
+_bFault = FALSE 
+
+
+IF (oCoolantOn AND bRequestChiller AND bChillerRunning) THEN
+   
+   IF iChillerAlarm OR NOT(iChillerRunning) THEN
+      _bFault =TRUE
+      CWRITE($CMD,E_stat,E_mode,"STOP 1")
+   ENDIF
+
+   
+ENDIF
+
+   IF $ALARM_STOP AND bRequestChiller THEN
+      oCoolantOn= TRUE
+   ELSE
+      oCoolantOn=FALSE
+   ENDIF
+END

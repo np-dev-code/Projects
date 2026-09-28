@@ -1,0 +1,31 @@
+&ACCESS RV
+&REL 168
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF ButtonControlSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 12/09/23
+;     Version: 0.15.48
+;************************************************
+; Description: sps For the button control. SPS stops
+; the program when the stop button is pressed
+;************************************************
+  
+;to Stop the program if the stop button is pressed
+IF ((NOT iStop) or (bPauseFlag)) THEN
+    CWRITE($CMD,E_stat,E_mode,"STOP 1")
+    bPauseFlag=FALSE
+ENDIF
+
+IF (($PRO_STATE1 == #P_FREE) AND bPauseFlag) THEN
+	bPauseFlag=FALSE
+ENDIF
+
+
+END

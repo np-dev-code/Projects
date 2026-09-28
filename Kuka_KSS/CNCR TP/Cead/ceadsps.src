@@ -1,0 +1,114 @@
+&ACCESS RVO2
+&REL 236
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF CeadSps(   )
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.5.51
+;************************************************
+; Description: sps control specific for the CEAD Extruder.
+;************************************************
+
+INT nAnswer; 
+DECL STATE_T E_stat
+DECL MODUS_T E_mode
+
+CEADConversion()
+
+IF iAcknowledgeMessages THEN
+   PULSE(oAckErrors,TRUE,1)
+ENDIF
+
+IF HeatZoneError() OR ServoError() OR iPelletTransportError OR ((NOT iNoEmergency) AND (iCeadOnRobot AND bToolOnRobot)) THEN
+   CWRITE($CMD,E_stat,E_mode,"STOP 1")
+ENDIF
+
+bTransportFault = iPelletTransportError OR iTransportWarning
+bServoFault = ServoError()
+
+IF HeatZoneError() THEN
+   bCeadInterrupt = TRUE
+ENDIF
+
+IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
+      bRotationFlag = FALSE
+      bHeatersFlag = FALSE
+      bTransportFlag = FALSE
+      bCeadInterrupt=FALSE
+ENDIF
+
+IF ($PRO_STATE1 <> #P_FREE) THEN
+	IF ($PRO_STATE1 <> #P_ACTIVE) THEN  ;If program is not active
+		oRotationOn = FALSE
+		oTransportOn = FALSE
+		IF oHeatersOn THEN
+			$TIMER_STOP[HEATER_TIMER] = FALSE
+        ENDIF
+      
+		IF ($PRO_STATE1 == #P_STOP) THEN
+			bCeadInterrupt = TRUE
+		ENDIF
+	ELSE
+		oRotationOn = bRotationFlag   
+		oTransportOn = bTransportFlag
+		oHeatersOn   = bHeatersFlag
+		$TIMER_STOP[HEATER_TIMER] = TRUE
+		$TIMER_FLAG[HEATER_TIMER] = FALSE
+		$TIMER[HEATER_TIMER] = HEATER_TIME
+    ENDIF
+ELSE
+    oRotationOn = bHmiRotation
+    oTransportOn = bHmiTransport
+    IF oHeatersOn AND iReadyForUse AND NOT iRotationOn THEN
+        $TIMER_STOP[HEATER_TIMER] = FALSE
+   ELSE
+      $TIMER_STOP[HEATER_TIMER] = TRUE
+      $TIMER_FLAG[HEATER_TIMER] = FALSE
+      $TIMER[HEATER_TIMER] = HEATER_TIME
+   ENDIF
+ENDIF
+
+IF ($ALARM_STOP AND iNoEmergency) THEN
+    oHeatersOn = (bHeatersFlag OR bHmiHeaters) AND (NOT $TIMER_FLAG[HEATER_TIMER])
+ELSE
+   oHeatersOn   = FALSE
+   oRotationOn = FALSE
+   oTransportOn = FALSE
+   bHmiRotation = FALSE
+   bHmiTransport = FALSE
+   bHmiHeaters = FALSE
+ENDIF
+	
+IF $PRO_STATE == #P_FREE THEN
+   bAdaptiveExtrusion = FALSE
+   rCurrentLayer = 0.00000
+   rTotalLayer = 0.00000
+ELSE
+   IF bAdaptiveExtrusion AND iRotationOn THEN
+      AdaptiveExtruderSpeed()
+   ELSE
+      rScrewAdjusted_rpm = rScrewSet_rpm * rExtrusionPercentage/100
+      IF bRaftPrint THEN
+         rScrewAdjusted_rpm = rScrewAdjusted_rpm * rRaftMultiplier
+      ENDIF
+   ENDIF
+ENDIF
+
+IF rExtrusionPercentage < 5 THEN
+   rExtrusionPercentage = 5
+ENDIF
+
+IF rExtrusionPercentage > 200 THEN
+   rExtrusionPercentage = 200
+ENDIF
+	
+bExtruderHot = (rHeatZone1Temp > 55) OR (rHeatZone2Temp > 55) OR (rHeatZone3Temp > 55) OR (rHeatZone4Temp > 55)
+
+END

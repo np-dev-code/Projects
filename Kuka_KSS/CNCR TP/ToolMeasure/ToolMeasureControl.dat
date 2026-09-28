@@ -1,0 +1,79 @@
+&ACCESS  RV
+&REL 31
+DEFDAT  TOOLMEASURECONTROL PUBLIC
+
+;Tool numbers
+GLOBAL CONST INT TOOL_MEASURE=13
+GLOBAL CONST INT HEAD_ATTACH=18
+GLOBAL CONST INT SHORT_SPIKE=19
+
+GLOBAL CONST INT LONG_SPIKE=20
+
+;Section for TCP Data.... 
+;GLOBAL STRUC VECTOR3DTYPE REAL X,Y,Z
+
+GLOBAL ENUM CADCAM_TYPE POWERMILL,SPRUTCAM
+
+DECL GLOBAL CONST CADCAM_TYPE cadCam=#POWERMILL
+
+;3 short spike TCPs used for calculation
+DECL GLOBAL VECTOR3DTYPE vecShortSpike[3]
+vecShortSpike[1]={X 307.930,Y 1.64000,Z 467.730}
+vecShortSpike[2]={X 307.860,Y 1.90000,Z 467.560}
+vecShortSpike[3]={X 307.940,Y 2.09000,Z 467.520}
+GLOBAL REAL rShortProbeLength=101.400 ;Short spike length
+
+;3 long spike TCPs used for calculation
+DECL GLOBAL VECTOR3DTYPE vecLongSpike[3]
+vecLongSpike[1]={X 541.890,Y 1.54000,Z 467.660}
+vecLongSpike[2]={X 541.860,Y 1.98000,Z 467.860}
+vecLongSpike[3]={X 541.560,Y 1.68000,Z 466.990}
+GLOBAL REAL rLongProbeLength=336.330 ;Long spike length
+
+;Full head attach point with rotations
+DECL GLOBAL FRAME frHeadAttach={X 205.975067,Y 1.93914294,Z 467.646973,A 0.0,B -89.9754868,C -0.0351167284}
+
+;Current tool TCP
+GLOBAL FRAME frTipActual={X 386.171,Y 1.82870042,Z 467.569885,A 0.0,B -89.9754868,C -0.0351167284}
+
+;TOOL LENGTH DATABASE
+
+
+
+GLOBAL REAL rToolLength=180.195969 ;Actual measured tool length
+GLOBAL REAL rToolError=0.769371510 ;Error applied to make process accurate
+GLOBAL REAL rGrossToolLength=246.736588 ;head attach height from base of measure sensor
+GLOBAL REAL rSensorHeight=67.3100 ;Measured length of the measure sensor
+DECL GLOBAL VECTOR3DTYPE vecToolDirection={X -0.999999762,Y 0.000612902513,Z 0.000427762716}
+
+;Section for Base Data 
+GLOBAL FRAME frProbeBase[3]
+frProbeBase[1]={X 1594.37891,Y 2099.13721,Z 1048.25830}
+frProbeBase[2]={X 1593.31335,Y 4339.05713,Z 1048.06372}
+frProbeBase[3]={X 1593.08984,Y 4339.33496,Z 548.391846}
+
+GLOBAL FRAME frBaseVector[3]
+frBaseVector[1]={X -1.25000,Y 216.790039,Z 1381.34985}
+frBaseVector[2]={X -2898.52,Y 27.1599121,Z 1380.59985}
+frBaseVector[3]={X 3623.15,Y 5887.99854,Z 1907091.38}
+
+;Library of Tool Lengths
+GLOBAL REAL rOldToolLength[32]
+rOldToolLength[1]=248.972443
+rOldToolLength[2]=244.352966
+rOldToolLength[3]=101.368774
+rOldToolLength[4]=180.195969
+rOldToolLength[5]=0.0
+rOldToolLength[6]=0.0
+rOldToolLength[7]=115.012131
+rOldToolLength[8]=127.440
+rOldToolLength[9]=225.140167
+rOldToolLength[10]=0.0
+rOldToolLength[11]=0.0
+rOldToolLength[12]=0.0
+rOldToolLength[13]=0.0
+rOldToolLength[14]=0.0
+rOldToolLength[15]=101.431450
+rOldToolLength[16]=0.0
+
+ENDDAT

@@ -1,0 +1,124 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&REL 236
+DEFDAT  CEADSPS PUBLIC
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 01/03/23
+;     Version: 0.0.26
+;************************************************
+; Description: Dat file to store data for the 
+; printer.
+;************************************************
+
+;Tool numbers
+GLOBAL CONST INT CEAD_EXTRUDER=17
+GLOBAL CONST INT CEAD_SHORT_SPIKE=18
+GLOBAL CONST INT CEAD_LONG_SPIKE=19
+
+;Structure creation
+GLOBAL STRUC MATERIAL_TYPE CHAR Name[10],REAL MaterialConstant,T1,T2,T3,T4
+GLOBAL ENUM PELLET_SOURCE INTERNAL_CABINET,DRYER
+
+;Extruder control flags
+GLOBAL BOOL bRotationFlag=FALSE
+GLOBAL BOOL bHeatersFlag=FALSE
+GLOBAL BOOL bTransportFlag=FALSE
+GLOBAL BOOL bExtruderSelected=FALSE
+GLOBAL BOOL bHeatzoneFault=FALSE
+GLOBAL BOOL bTransportFault=FALSE
+GLOBAL BOOL bServoFault=FALSE
+
+;Process control variables
+GLOBAL BOOL bRaftPrint=TRUE
+GLOBAL BOOL bAdaptiveExtrusion=FALSE
+GLOBAL BOOL bCeadInterrupt=FALSE
+GLOBAL BOOL bExtruderHot=FALSE
+GLOBAL INT nNozzleSize=4
+GLOBAL REAL rRaftMultiplier=1.20000
+GLOBAL REAL rLayerHeight=2.00000
+GLOBAL REAL rLayerWidth=6.00000
+GLOBAL REAL rBasePrintSpeed=20.0000
+GLOBAL REAL rExtruderOnDelay=0.800000
+GLOBAL REAL rExtruderOffDelay=-174.748505
+
+;Conversion variables from CEAD comms
+GLOBAL INT nWarmUpTimer=600
+GLOBAL INT nScrewTorque=0
+GLOBAL REAL rExtrusionPercentage=100.000
+GLOBAL REAL rMaterialConstant=25.0740
+GLOBAL CHAR strMaterialName[10]
+strMaterialName[]="PETG30"
+GLOBAL REAL rHeatZone1Temp=17.8699989
+GLOBAL REAL rHeatZone2Temp=17.8699989
+GLOBAL REAL rHeatZone3Temp=17.8699989
+GLOBAL REAL rHeatZone4Temp=17.9700
+GLOBAL REAL rExtruderScrewSpeed=-8.12790604E-05 ; 
+GLOBAL REAL rExtruderScrewUtil=0.0183146410 ; 
+GLOBAL REAL rExtruderScrewTorque=0.00336438650 ; 
+GLOBAL REAL rBed1AverageTemp=0.0
+GLOBAL REAL rBed2AverageTemp=0.0
+
+GLOBAL INT nChangePelletSource=1
+GLOBAL REAL rPumpTime=30.0000
+GLOBAL REAL rShotSize=1.00000
+GLOBAL REAL rTempSet1=220.000
+GLOBAL REAL rTempSet2=225.000
+GLOBAL REAL rTempSet3=230.000
+GLOBAL REAL rTempSet4=230.000
+GLOBAL REAL rHeatZone1Set=240.000
+GLOBAL REAL rHeatZone2Set=255.000
+GLOBAL REAL rHeatZone3Set=260.000
+GLOBAL REAL rHeatZone4Set=260.000
+GLOBAL REAL rScrewSet_rpm=10.0000
+GLOBAL REAL rScrewAdjusted_rpm=12.0000
+GLOBAL REAL rBed1Set=0.0
+GLOBAL REAL rBed2Set=0.0
+
+;Material testing variables
+GLOBAL STRUC MATERIAL_TEST INT nNoOfTests,REAL rTestTime,rSumOfValues,rMaterialConstant,rDensity
+DECL GLOBAL MATERIAL_TEST MT={nNoOfTests 7,rTestTime 60.0000,rSumOfValues 326.813599,rMaterialConstant 46.5792656,rDensity 1.21000}
+GLOBAL INT nMTTestNumber=1
+GLOBAL INT nMTPrevTestNumber=1
+GLOBAL REAL rMTWeight[10]
+rMTWeight[1]=16.0000
+rMTWeight[2]=32.0000
+rMTWeight[3]=50.0000
+rMTWeight[4]=70.0000
+rMTWeight[5]=106.000
+rMTWeight[6]=140.000
+rMTWeight[7]=173.000
+rMTWeight[8]=202.000
+rMTWeight[9]=237.000
+rMTWeight[10]=267.000
+GLOBAL REAL rMTRPM[10]
+rMTRPM[1]=5.00000
+rMTRPM[2]=10.0000
+rMTRPM[3]=15.0000
+rMTRPM[4]=20.0000
+rMTRPM[5]=30.0000
+rMTRPM[6]=40.0000
+rMTRPM[7]=50.0000
+rMTRPM[8]=60.0000
+rMTRPM[9]=70.0000
+rMTRPM[10]=80.0000
+GLOBAL REAL rMTVolume=12396.6934
+GLOBAL REAL rMTVolPerSec=206.611557
+GLOBAL REAL rMTVolPerSecPerRPM=41.3223114
+
+;Material Library
+DECL GLOBAL MATERIAL_TYPE SELECTED_MATERIAL={Name[] "PETG30",MaterialConstant 25.0740,T1 220.000,T2 225.000,T3 230.000,T4 230.000}
+DECL GLOBAL CONST MATERIAL_TYPE CUSTOM={Name[] "CUSTOM",MaterialConstant 0.0,T1 170.000,T2 175.000,T3 180.000,T4 180.000}
+DECL GLOBAL CONST MATERIAL_TYPE PURGE_COMPOUND={Name[] "PURGE",MaterialConstant 0.0,T1 170.000,T2 175.000,T3 180.000,T4 180.000}
+DECL GLOBAL CONST MATERIAL_TYPE PLA={Name[] "PLA",MaterialConstant 0.0,T1 170.000,T2 175.000,T3 180.000,T4 180.000}
+DECL GLOBAL CONST MATERIAL_TYPE PETG30={Name[] "PETG30",MaterialConstant 25.0740,T1 220.000,T2 225.000,T3 230.000,T4 230.000}
+;DECL GLOBAL CONST MATERIAL_TYPE PLA = {Name[] "PLA",MaterialConstant 5.0,T1 170.0,T2 175.0,T3 180.0,T4 180}
+
+ENDDAT

@@ -1,0 +1,17 @@
+&ACCESS  RV
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+&REL 182
+DEFDAT  FLEXXPUMPSPS PUBLIC
+
+GLOBAL BOOL bLubricateTrack=FALSE ;for triggering stop message
+GLOBAL REAL rTrackDistance=855767.250
+GLOBAL REAL rMaxTrackDistance=1.00000E+09
+GLOBAL REAL rPreviousTrackPosition=4336.62549
+GLOBAL INT nLubeAns=0
+GLOBAL INT nTrackMsgs=500
+GLOBAL INT nTrackCalcPeriod=1000
+GLOBAL BOOL bTrackMessage=FALSE
+
+ENDDAT

@@ -1,0 +1,77 @@
+&ACCESS RVO6
+&REL 41
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\CNCR PROGRAM\EOAChanger
+DEF EOAChangeSafe( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;        Date: 13/10/2022
+;     Version: 1.0
+;************************************************
+; Description: Routine to move the robot to the
+;              Safe Position for Change operations
+;************************************************
+
+;FOLD INI;%{PE}
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+    BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+
+  ;ENDFOLD (USER INI)
+;ENDFOLD (INI)
+
+;safe position above tool rack level 1, this is roughly central to tool rack 
+SWITCH ToolOnRobot
+CASE #SPINDLE
+
+;FOLD PTP <EOASafe> Vel=20 % PDAT8 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=True; Kuka.PointName=EOASafe; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT8; Kuka.VelocityPtp=20; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT8
+FDAT_ACT = gFEOASafe
+BAS(#PTP_PARAMS, 20.0)
+SET_CD_PARAMS (0)
+PTP gXEOASafe
+;ENDFOLD
+CASE #CEAD
+
+;FOLD PTP <EOASafe> Vel=20 % PDAT7 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=True; Kuka.PointName=EOASafe; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT7; Kuka.VelocityPtp=20; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT7
+FDAT_ACT = gFEOASafe
+BAS(#PTP_PARAMS, 20.0)
+SET_CD_PARAMS (0)
+PTP gXEOASafe
+;ENDFOLD
+CASE #NONE
+
+;FOLD PTP <EOASafe> Vel=20 % PDAT6 Tool[0] Base[0] ;%{PE}
+;FOLD Parameters ;%{h}
+;Params IlfProvider=kukaroboter.basistech.inlineforms.movement.old; Kuka.IsGlobalPoint=True; Kuka.PointName=EOASafe; Kuka.BlendingEnabled=False; Kuka.MoveDataPtpName=PDAT6; Kuka.VelocityPtp=20; Kuka.CurrentCDSetIndex=0; Kuka.MovementParameterFieldEnabled=True; IlfCommand=PTP
+;ENDFOLD
+$BWDSTART = FALSE
+PDAT_ACT = PPDAT6
+FDAT_ACT = gFEOASafe
+BAS(#PTP_PARAMS, 20.0)
+SET_CD_PARAMS (0)
+PTP gXEOASafe
+;ENDFOLD
+ENDSWITCH
+
+
+
+END

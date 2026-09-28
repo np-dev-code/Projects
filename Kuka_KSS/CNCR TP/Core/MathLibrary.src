@@ -1,0 +1,210 @@
+&ACCESS RV2
+&REL 41
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertVorgabe
+DEF MathLibrary( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 26/09/23
+;     Version: 0.8.51
+;************************************************
+; Description: maths related source files
+;************************************************
+
+
+; An evolving collection of functions for frame manipulation
+;
+; Exported functions:
+;   FRAME MAKEFRAME(ORIGIN,XPT,XYPT)
+;   FRAME INTERPOLATE(STARTFRAME,ENDFRAME,FACTOR)
+;   FRAME MAKETOOL(SH_MS,LG_MS,SS,LS,YDIR,RESULT)
+END
+
+GLOBAL DEFFCT VECTOR3DTYPE CrossProduct(V1:IN,V2:IN,RESULT:OUT)
+  DECL VECTOR3DTYPE V1,V2,RESULT
+  
+  RESULT.X=V1.Y*V2.Z-V1.Z*V2.Y
+  RESULT.Y=V1.Z*V2.X-V1.X*V2.Z
+  RESULT.Z=V1.X*V2.Y-V1.Y*V2.X
+
+  RETURN(RESULT)
+
+ENDFCT
+
+GLOBAL DEFFCT REAL DotProduct(V1:IN,V2:IN,RESULT:OUT)
+  DECL VECTOR3DTYPE V1,V2
+  DECL REAL RESULT
+  
+  RESULT=V1.X*V2.X + V1.Y*V2.Y + V1.Z*V2.Z
+  RETURN(RESULT)
+
+ENDFCT
+
+GLOBAL DEFFCT VECTOR3DTYPE VecAdd(V1:IN,V2:IN,RESULT:OUT)
+  DECL VECTOR3DTYPE V1,V2, RESULT
+  
+  RESULT.X=V1.X + V2.X
+  RESULT.Y=V1.Y + V2.Y
+  RESULT.Z=V1.Z + V2.Z
+  
+  RETURN(RESULT)
+
+ENDFCT
+
+GLOBAL DEFFCT VECTOR3DTYPE VecSubtract(V1:IN,V2:IN,RESULT:OUT)
+  DECL VECTOR3DTYPE V1,V2, RESULT
+  
+  RESULT.X=V1.X - V2.X
+  RESULT.Y=V1.Y - V2.Y
+  RESULT.Z=V1.Z - V2.Z
+  
+  RETURN(RESULT)
+
+ENDFCT
+
+GLOBAL DEFFCT VECTOR3DTYPE VecScale(scale:IN,V1:IN,RESULT:OUT)
+  DECL VECTOR3DTYPE V1,V2, RESULT
+  DECL REAL scale
+  
+  RESULT.X=scale*V1.X
+  RESULT.Y=scale*V1.Y
+  RESULT.Z=scale*V1.Z
+  
+  RETURN(RESULT)
+
+ENDFCT
+
+GLOBAL DEF Normalise(VEC:OUT)
+  DECL VECTOR3DTYPE VEC
+  DECL REAL NORM
+  
+  NORM=VEC.X*VEC.X
+  NORM=NORM+VEC.Y*VEC.Y
+  NORM=NORM+VEC.Z*VEC.Z
+
+  NORM=SQRT(NORM)
+
+  VEC.X=VEC.X/NORM
+  VEC.Y=VEC.Y/NORM
+  VEC.Z=VEC.Z/NORM
+
+END
+GLOBAL DEFFCT VECTOR3DTYPE VecFrom2Pts(STARTPT:IN,ENDPT:IN,RESULT:OUT)
+  DECL E6POS STARTPT,ENDPT
+  DECL VECTOR3DTYPE RESULT
+  
+  RESULT.X=ENDPT.X-STARTPT.X
+  RESULT.Y=ENDPT.Y-STARTPT.Y
+  RESULT.Z=ENDPT.Z-STARTPT.Z
+
+  RETURN(RESULT)
+ENDFCT
+
+GLOBAL DEFFCT VECTOR3DTYPE VecFromFrame(frameIn:IN,RESULT:OUT)
+  DECL Frame frameIn
+  DECL VECTOR3DTYPE RESULT
+  
+  RESULT.X=frameIn.X
+  RESULT.Y=frameIn.Y
+  RESULT.Z=frameIn.Z
+
+  RETURN(RESULT)
+ENDFCT
+
+GLOBAL DEFFCT VECTOR3DTYPE VecFromE6Pos(frameIn:IN,RESULT:OUT)
+  DECL E6POS frameIn
+  DECL VECTOR3DTYPE RESULT
+  
+  RESULT.X=frameIn.X
+  RESULT.Y=frameIn.Y
+  RESULT.Z=frameIn.Z
+
+  RETURN(RESULT)
+ENDFCT
+
+; Create a frame from an origin point, a point on the x-axis
+; and a third point on the xy-plane
+GLOBAL DEFFCT FRAME MakeFrame(ORIGIN:IN,XPT:IN,XYPT:IN, RESULT:OUT)
+  DECL E6POS ORIGIN,XPT,XYPT
+  DECL VECTOR3DTYPE XDIR,YDIR,ZDIR
+  DECL FRAME RESULT
+
+  XDIR=VECFROM2PTS(ORIGIN,XPT)  
+  Normalise(XDIR) 
+  YDIR=VecFrom2Pts(ORIGIN,XYPT)
+  Normalise(YDIR)
+  ZDIR=CrossProduct(XDIR,YDIR)
+  Normalise(ZDIR)
+  YDIR=CrossProduct(ZDIR,XDIR)
+  Normalise(YDIR)  
+
+  RESULT=MatToFrameABC(ORIGIN,XDIR,YDIR,ZDIR)
+
+  RETURN(RESULT)
+ENDFCT
+
+
+; Create a frame from an origin point and 3 direction cosine vectors
+GLOBAL DEFFCT FRAME MatToFrameABC(ORIGIN:IN, XDIR:IN, YDIR:IN, ZDIR:IN, RESULT:OUT)
+  DECL E6POS ORIGIN
+  DECL VECTOR3DTYPE XDIR, YDIR, ZDIR
+  DECL FRAME RESULT
+
+  RESULT.X=ORIGIN.X
+  RESULT.Y=ORIGIN.Y
+  RESULT.Z=ORIGIN.Z
+
+  IF ABS(ABS(XDIR.Z) - 1) < 0.000001 THEN
+    RESULT.A=ATAN2(-YDIR.X,YDIR.Y)
+    RESULT.B=ATAN2(-XDIR.Z,0)
+    RESULT.C=0
+  ELSE
+    RESULT.A=ATAN2(XDIR.Y,XDIR.X)
+    RESULT.B=ATAN2(-XDIR.Z,SQRT(YDIR.Z*YDIR.Z+ZDIR.Z*ZDIR.Z))
+    RESULT.C=ATAN2(YDIR.Z,ZDIR.Z)
+  ENDIF
+
+  RETURN(RESULT)
+ENDFCT
+
+
+GLOBAL DEF CreateMatrix ( _x:IN, _y:IN, _z:IN, _t[,]:OUT)
+   DECL REAL     _t[,]
+   DECL VECTOR3DTYPE _x, _y, _z
+      _t[1,1] = _x.X
+      _t[2,1] = _X.Y
+      _t[3,1] = _X.Z
+
+      _t[1,2] = _y.X
+      _t[2,2] = _y.Y
+      _t[3,2] = _y.Z
+
+      _t[1,3] = _z.X
+      _t[2,3] = _z.Y
+      _t[3,3] = _z.Z
+
+END
+GLOBAL DEF  MatrixToRotations (t[,]:OUT, _A:OUT, _B:OUT, _C:OUT)
+   ;Conversion of a transformer matrix T into the ROT angles A, B, C
+   ;T = Rot_z(A) * Rot_y(B) * Rot_x(C)
+   DECL REAL     t[,]
+   DECL REAL     sin_a, cos_a, sin_b, abs_cos_b, sin_c, cos_c
+   DECL REAL     _A, _B, _C
+   _A = ATAN2 (t[2,1], t[1,1])
+   sin_a = SIN(_A)    
+   cos_a = COS(_A) 
+   sin_b = -t[3,1]
+   abs_cos_b = cos_a*t[1,1] + sin_a*t[2,1]
+   _B = atan2 (sin_b, abs_cos_b);      : -90 <= B <= +90 !!
+   sin_c =  sin_a*t[1,3] - cos_a*t[2,3]
+   cos_c = -sin_a*t[1,2] + cos_a*t[2,2]
+   _C = ATAN2 (sin_c, cos_c)
+END
+
+
+
+

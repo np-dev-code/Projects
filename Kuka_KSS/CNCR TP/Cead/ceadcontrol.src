@@ -1,0 +1,328 @@
+&ACCESS RVO
+&REL 3
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF CeadControl( )
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/12/23
+;     Version: 0.5.51
+;************************************************
+; Description: Routines for the control of the
+;              system components which make up the 
+;              massive Dimension system
+;************************************************
+END
+
+GLOBAL DEF RotationOn()
+
+
+CheckEOATooling(#CEAD)
+
+WAIT SEC 0
+
+bRotationFlag = TRUE
+
+WAIT FOR (iRotationOn == TRUE)
+
+END
+
+GLOBAL DEF RotationOff()
+
+WAIT SEC 0
+
+bRotationFlag = FALSE
+
+WAIT FOR (iRotationOn == FALSE)
+
+END
+
+
+GLOBAL DEF HeatersOn( )
+
+CheckEOATooling(#CEAD)
+
+WAIT SEC 0
+bHeatersFlag= TRUE
+WAIT FOR (iHeatersOn == TRUE)
+
+END
+
+GLOBAL DEF HeatersOff( )
+
+WAIT SEC 0
+bHeatersFlag= FALSE
+WAIT FOR (iHeatersOn == FALSE)
+
+END
+
+GLOBAL DEF TransportOn( )
+
+CheckEOATooling(#CEAD)
+
+WAIT SEC 0
+bTransportFlag= TRUE
+WAIT FOR (iTransportOn == TRUE)
+
+END
+
+GLOBAL DEF TransportOff( )
+
+WAIT SEC 0
+bTransportFlag= FALSE
+WAIT FOR (iTransportOn == FALSE)
+
+END
+
+GLOBAL DEF SetHeatZones (fin_hz1:IN, fin_hz2:IN, fin_hz3:IN,fin_hz4:IN)
+REAL fin_hz1,fin_hz2,fin_hz3,fin_hz4
+
+CheckEOATooling(#CEAD)
+
+rHeatZone1Set = fin_hz1
+rHeatZone2Set = fin_hz2
+rHeatZone3Set = fin_hz3
+rHeatZone4Set = fin_hz4
+
+IF iHeatersOn==FALSE THEN
+ HeatersOn()
+ENDIF
+END
+
+GLOBAL DEF SetScrewSpeed(fin_rSpeed:IN)
+
+REAL fin_rSpeed;
+
+CheckEOATooling(#CEAD)
+
+rScrewSet_rpm = fin_rSpeed
+
+END
+
+
+GLOBAL DEF StartBuzzer ()
+
+oBuzzOnEmpty = FALSE
+oStopBuzzer = FALSE
+Pulse(oStartBuzzer, TRUE, 0.5)
+
+WAIT FOR iBuzzerOn==TRUE
+
+END
+
+GLOBAL DEF StopBuzzer ()
+
+oBuzzOnEmpty = FALSE
+oStartBuzzer = FALSE
+Pulse(oStopBuzzer, TRUE, 0.5)
+
+WAIT FOR iBuzzerOn==FALSE
+
+END
+
+
+GLOBAL DEF BuzzOnEmpty ()
+
+oStopBuzzer = FALSE
+oStartBuzzer = FALSE
+oBuzzOnEmpty = TRUE
+
+END
+
+
+GLOBAL DEF SetPelletSource(fin_pelletSource:IN)
+
+DECL PELLET_SOURCE fin_pelletSource
+
+CheckEOATooling(#CEAD)
+
+switch fin_pelletSource
+   
+   CASE #INTERNAL_CABINET
+      nChangePelletSource = 0
+   CASE #DRYER
+      nChangePelletSource = 1
+ ENDSWITCH
+
+END
+
+GLOBAL DEFFCT BOOL HeatZoneError()
+
+bHeatZone1OverTemp = iHeatZone1OverTemp
+bHeatZone2OverTemp = iHeatZone2OverTemp
+bHeatZone3OverTemp = iHeatZone3OverTemp
+bHeatZone4OverTemp = iHeatZone4OverTemp
+bHeatZone2UnderTemp = iHeatZone2UnderTemp
+bHeatZone3UnderTemp = iHeatZone3UnderTemp
+bHeatZone4UnderTemp = iHeatZone4UnderTemp
+
+RETURN (iHeatZone1OverTemp OR iHeatZone2OverTemp OR iHeatZone3OverTemp OR iHeatZone4OverTemp  OR   iHeatZone2UnderTemp OR iHeatZone3UnderTemp OR  iHeatZone4UnderTemp)
+
+ENDFCT
+
+GLOBAL DEFFCT BOOL ServoError()
+DECL BOOL bOver95
+
+IF iServoUtilization OR iServoTorque THEN
+   $TIMER_STOP[OVERLOAD_TIMER] = FALSE
+ELSE
+   $TIMER_STOP[OVERLOAD_TIMER] = TRUE
+   $TIMER[OVERLOAD_TIMER] = OVERLOAD_TIME
+ENDIF
+
+IF $TIMER_FLAG[OVERLOAD_TIMER] THEN
+   bOver95 = TRUE
+ELSE
+   bOver95 = FALSE
+ENDIF   
+
+RETURN (iServoMissing OR iServoError OR bOver95)
+
+ENDFCT
+
+GLOBAL DEF ResetCEAD()
+   WHILE iNoEmergency==FALSE
+   oAckErrors=TRUE
+   WAIT SEC 0.5
+   oAckErrors=FALSE
+   ENDWHILE
+END
+
+GLOBAL DEF WaitForReady( )
+
+BOOL _ret;
+INT _nLength,_nSeconds
+INT _nHandle
+DECL KRLMSG_T Name
+DECL KRLMSGPAR_T MsgPar[1]
+
+CheckEOATooling(#CEAD)
+
+_ret=strcopy(Name.MODUL[],"CEAD")
+
+Name.NR = 11 + nCEADMsg
+
+
+IF iReadyForUse==TRUE THEN
+    _ret = strCopy(Name.msg_txt[],"Ready For Use");    
+     _nHandle = SET_KRLMsg(#NOTIFY,Name,MsgPar[],E_progNotifyMsgOpt)
+   return
+ENDIF   
+
+_ret = strCopy(Name.msg_txt[],"Waiting For Heatzones");    
+     _nHandle = SET_KRLMsg(#WAITING,Name,MsgPar[],E_progNotifyMsgOpt)
+
+;IF iExtruderHeating==TRUE THEN
+;   WAIT FOR (iExtruderHeating==FALSE)
+;ENDIF
+
+  IF EXISTS_KRLMSG(_nHandle) THEN
+      _ret = CLEAR_KRLMSG(_nHandle)
+  ENDIF
+    _ret = strCopy(Name.msg_txt[],"HeatZones at Temperture. Warm-up Started");    
+     _nHandle = SET_KRLMsg(#WAITING,Name,MsgPar[],E_progNotifyMsgOpt)
+WHILE (iReadyForUse==FALSE) 
+ 
+   _nSeconds = iWarmupTimer;
+      
+    _ret = strCopy(Name.msg_txt[],"HeatZones at Temperture. Warm-up Timer: ");    
+   
+    _nLength = STRADD( Name.msg_txt[], IntToString(_nSeconds) )
+
+    _nLength = STRADD( Name.msg_txt[], " seconds")
+   IF EXISTS_KRLMSG(_nHandle) THEN
+      _ret = CLEAR_KRLMSG(_nHandle)
+  ENDIF
+     _nHandle = SET_KRLMsg(#WAITING,Name,MsgPar[],E_progNotifyMsgOpt)
+     
+     IF iWarmupTimer>10 THEN
+	     WAIT SEC 10
+     ELSE 
+         WAIT SEC 1
+     ENDIF         
+	  
+ENDWHILE
+
+  IF EXISTS_KRLMSG(_nHandle) THEN
+      _ret = CLEAR_KRLMSG(_nHandle)
+  ENDIF
+END
+
+
+GLOBAL DEF FinishPrint()
+   RotationOff()
+   TransportOff()
+   HeatersOff()
+END
+
+GLOBAL DEF ExtruderDelayOn ()
+   ; Turn on extruder
+   rExtruderOnDelay = 0.8 - (0.1 * rScrewSet_rpm)
+   IF rExtruderOnDelay < 0 THEN
+      rExtruderOnDelay = 0
+   ENDIF
+   RotationOn( )
+   WAIT SEC rExtruderOnDelay
+END
+
+GLOBAL DEF SetRotationFlag(fin_bool:IN)
+   BOOL fin_bool
+   bRotationFlag = fin_bool
+END
+
+GLOBAL DEF ExtruderDelayOff ()
+   ; Turn off extruder
+   rExtruderOffDelay = -(rScrewSet_rpm * 20)
+   TRIGGER WHEN DISTANCE = 1 DELAY = rExtruderOffDelay DO SetRotationFlag(FALSE) PRIO = 100
+END
+
+GLOBAL DEF AdaptiveExtruderSpeed()
+   IF $PRO_STATE == #P_ACTIVE THEN
+      IF $VEL_ACT < 0.001 THEN
+         rScrewSet_rpm = (($VEL.CP * 1000 * rLayerHeight * rLayerWidth) / rMaterialConstant)
+      ELSE
+         rScrewSet_rpm = (($VEL_ACT * 1000 * rLayerHeight * rLayerWidth) / rMaterialConstant)
+      ENDIF
+      rScrewAdjusted_rpm = rScrewSet_rpm * rExtrusionPercentage/100
+      IF bRaftPrint THEN
+		IF rRaftMultiplier < 1.0 THEN
+			rRaftMultiplier = 1.0
+		ELSE
+			IF rRaftMultiplier > 1.8 THEN
+				rRaftMultiplier = 1.8
+			ENDIF
+		ENDIF
+         rScrewAdjusted_rpm = rScrewAdjusted_rpm * rRaftMultiplier
+      ENDIF
+   ENDIF
+END
+
+GLOBAL DEF MaterialSelection(Material:IN)
+DECL MATERIAL_TYPE Material
+
+rMaterialConstant = Material.MaterialConstant
+rTempSet1 = Material.T1
+rTempSet2 = Material.T2
+rTempSet3 = Material.T3
+rTempSet4 = Material.T4
+WAIT FOR STRCLEAR(strMaterialName[])
+WAIT FOR STRCOPY(strMaterialName[],Material.Name[])
+
+END
+
+GLOBAL DEF ChangeMaterial(Material:IN)
+DECL MATERIAL_TYPE Material
+
+SELECTED_MATERIAL.MaterialConstant = Material.MaterialConstant
+SELECTED_MATERIAL.T1 = Material.T1
+SELECTED_MATERIAL.T2 = Material.T2
+SELECTED_MATERIAL.T3 = Material.T3
+SELECTED_MATERIAL.T4 = Material.T4
+WAIT FOR STRCLEAR(SELECTED_MATERIAL.Name[])
+WAIT FOR STRCOPY(SELECTED_MATERIAL.Name[],Material.Name[])
+
+END
+
+

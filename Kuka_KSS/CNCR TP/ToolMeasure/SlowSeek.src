@@ -1,0 +1,42 @@
+&ACCESS RVO1
+&REL 11
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+&PARAM DISKPATH = KRC:\R1\Program\NEW DEV
+DEF SlowSeek( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: Program to have robot seek the measure
+; sensor at slow speed.
+;************************************************
+
+;FOLD INI;%{PE}
+;ENDFOLD (INI)
+  ;FOLD BASISTECH INI
+    GLOBAL INTERRUPT DECL 3 WHEN $STOPMESS==TRUE DO IR_STOPM ( )
+    INTERRUPT ON 3 
+ ;   BAS (#INITMOV,0 )
+  ;ENDFOLD (BASISTECH INI)
+
+
+CheckEOATooling(#SPINDLE)
+
+;INTERRUPT DECL 10 WHEN $TOOL_MEASURE_GOOD==FALSE DO SUB_STOP ()
+$VEL.CP = 0.0015
+
+MsgNotify("Slow seek in progress...", "ToolMeasure",,, nMeasureMsg + 9, E_progNotifyMsgOpt)
+
+;START FROM MEASURE SAFE.
+
+LIN_REL {Z -7.5}
+$ADVANCE=0
+
+
+END

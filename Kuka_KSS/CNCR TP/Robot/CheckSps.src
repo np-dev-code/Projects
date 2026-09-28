@@ -1,0 +1,61 @@
+&ACCESS RVP1
+&REL 45
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\vorgabe
+DEF CheckSps( )
+
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 05/04/24
+;     Version: 1.10.54
+;************************************************
+; Description: Routine to Confirm Vacuum is present
+;************************************************
+INT _i, _nRet
+CHAR _strOut[30]
+BOOL _ret
+
+FOR _i = 1 to 8
+  IF  SpsTest(_i) THEN
+      IF  $PROG_INFO[_i+1].P_STATE <> #P_ACTIVE THEN
+         HALT
+
+         _ret = STRCLEAR(_strOut[])
+         _ret = STRCOPY (_strOut[], "RUN " )
+        
+         _nRet = STRADD (_strOut[], IntToString(_i + 1))              
+              
+         HALT
+         CWRITE ($CMD, E_STAT, E_MODE, _strOut[] )        
+      ENDIF
+  ENDIF
+ENDFOR
+   
+END
+
+GLOBAL DEFFCT BOOL SpsTest (_nSpsNum:IN)
+INT _nSpsNum
+
+SWITCH _nSpsNum
+    CASE 1
+          RETURN NOT STRCOMP($PRO_I_O_SYS.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 2
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID3.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 3
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID4.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 4
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID5.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 5
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID6.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 6
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID7.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 7
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID8.MODULE[], " ", #NOT_CASE_SENS)
+    CASE 8
+          RETURN NOT STRCOMP($PRO_I_O_PROC_ID9.MODULE[], " ", #NOT_CASE_SENS)
+ENDSWITCH
+
+ENDFCT

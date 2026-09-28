@@ -1,0 +1,159 @@
+&ACCESS RVO
+&REL 38
+&COMMENT HANDLER on external automatic
+&PARAM DISKPATH = KRC:\R1\Program\CNCR\CNCR_SUB
+DEF TipCalc( )
+;FOLD INI
+  ;ENDFOLD (BASISTECH INI)
+  ;FOLD USER INI
+    ;Make your modifications here
+  ;ENDFOLD (USER INI)
+  ;ENDFOLD (INI)
+  
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.12.46
+;************************************************
+; Description: program to calculate tip data for 
+;              a TCP
+;************************************************
+
+SWITCH CadCam
+   CASE #POWERMILL
+      PowerMillCalcTip ( )
+   CASE #SPRUTCAM
+      SprutCamCalcTip ( )
+ENDSWITCH
+
+END
+
+
+DEF PowerMillCalcTip ( )
+DECL VECTOR3DTYPE _zDirection, _yDirection, _xDirection, _headXYZ, _vec, _tipActual
+
+DECL ROTATIONSTYPE _rotations
+DECL REAL _R[3,3]
+
+_zDirection = {X 0, Y 0, Z 1}
+
+GetHeadAttachXYZ(vecShortSpike[], rShortProbeLength, vecLongSpike[],rLongProbeLength, _zDirection,_headXYZ)
+
+
+_yDirection = {X 0, Y 1, Z 0}
+
+_xDirection = CrossProduct(_yDirection,_zDirection)
+Normalise( _xDirection)
+
+_yDirection = CrossProduct(_zDirection, _xDirection)
+normalise( _yDirection)
+
+CreateMatrix(_xDirection,_yDirection,_zDirection,_R[,])
+
+MatrixToRotations( _R[,], frHeadAttach.A,frHeadAttach.B,frHeadAttach.C)
+
+frHeadAttach.A = frHeadAttach.A + tcpOffset.A 
+frHeadAttach.B = frHeadAttach.B + tcpOffset.B 
+frHeadAttach.C = frHeadAttach.C + tcpOffset.C 
+
+VecToFrame(_headXYZ, frHeadAttach)
+
+vecToolDirection = _zDirection
+
+CalcTCP()
+END
+
+DEF SprutCamCalcTip ( )
+
+DECL VECTOR3DTYPE _zDirection, _yDirection, _xDirection, _headXYZ, _tipActual
+DECL ROTATIONSTYPE _rotations
+DECL REAL _R[3,3], _a,_b,_c
+
+GetHeadAttachXYZ(vecShortSpike[], rShortProbeLength, vecLongSpike[],rLongProbeLength,_zDirection,_headXYZ)
+
+_zDirection = VecScale(-1.0, _zDirection)
+
+frHeadAttach.B = ACOS(_zDirection.Z) + tcpOffset.B
+frHeadAttach.A = - ATAN2( _zDirection.Y, _zDirection.X)+ tcpOffset.A
+frHeadAttach.C =  tcpOffset.C
+
+VecToFrame(_headXYZ, frHeadAttach)
+vecToolDirection = _zDirection
+CalcTCP ()
+END
+
+DEF  GetHeadAttachXYZ(_shortSpike[]:OUT,_shortLength:IN,_longSpike[]:OUT,_longLength:IN,_zDir:OUT,_headAttach:OUT)
+
+DECL VECTOR3DTYPE _shortSpike[],_longSpike[], _zDir
+DECL VECTOR3DTYPE _headAttach
+DECL REAL _shortLength, _longLength
+DECL VECTOR3DTYPE _shortAverage,_longAverage, _attachShort, _attachLong
+
+_shortAverage.X =(_shortSpike[1].X + _shortSpike[2].X+_shortSpike[3].X )/3.0
+_shortAverage.Y =(_shortSpike[1].Y + _shortSpike[2].Y+_shortSpike[3].Y )/3.0
+_shortAverage.Z =(_shortSpike[1].Z + _shortSpike[2].Z+_shortSpike[3].Z )/3.0
+
+
+_longAverage.X = (_longSpike[1].X +  _longSpike[2].X +_longSpike[3].X )/3.0
+_longAverage.Y = (_longSpike[1].Y +  _longSpike[2].Y +_longSpike[3].Y )/3.0
+_longAverage.Z = (_longSpike[1].Z +  _longSpike[2].Z +_longSpike[3].Z )/3.0
+;VECTOR DIRECTION - SHORT - LONG AVERAGE 
+
+_zDir = VecSubtract(_shortAverage, _longAverage)
+
+Normalise(_zDir)
+
+;ATTACH POINT SHORT = SHORT AVERAGE + ( SHORT LENGHT * U_VECTOR_DIRECTION ) 
+
+_attachShort = VecAdd( _shortAverage, VecScale(_shortLength,_zDir) )
+_attachLong =  VecAdd( _longAverage, VecScale(_longLength,_zDir) )
+
+;ATTACH POINT LONG 
+
+_headAttach = (VecScale(0.5,VecAdd(_attachShort,_attachLong) ) )
+
+END
+
+
+DEF SetTip (_xyz:IN, _rotations:IN)
+DECL ROTATIONSTYPE _rotations
+DECL VECTOR3DTYPE _xyz
+
+frTipActual.X = _xyz.X
+frTipActual.Y = _xyz.Y
+frTipActual.Z = _xyz.Z
+frTipActual.A = frHeadAttach.A
+frTipActual.B = frHeadAttach.B
+frTipActual.C = frHeadAttach.C
+
+END
+DEF VecToFrame (_vec:IN, _frame:OUT)
+DECL VECTOR3DTYPE _vec
+DECL FRAME _frame
+_frame.X = _vec.X
+_frame.Y =_vec.Y
+_frame.z = _vec.Z
+END
+
+DEF CalcTCP()
+DECL VECTOR3DTYPE _tipActual,_headXYZ
+_headXYZ.X =  frHeadAttach.X
+_headXYZ.Y =  frHeadAttach.Y
+_headXYZ.Z =  frHeadAttach.Z
+
+SWITCH CadCam
+CASE #POWERMILL
+_tipActual= VecSubtract(_headXYZ, VecScale(rToolLength,vecToolDirection))
+CASE #SPRUTCAM
+_tipActual= VecAdd(_headXYZ, VecScale(rToolLength,vecToolDirection))
+ENDSWITCH
+
+frTipActual = frHeadAttach
+
+VecToFrame(_tipActual,frTipActual)
+
+
+END

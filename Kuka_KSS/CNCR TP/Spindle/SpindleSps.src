@@ -1,0 +1,71 @@
+&ACCESS RV
+&REL 164
+&COMMENT Ansteuerung Micromaster Frequenzumrichter
+&PARAM EDITMASK = *
+&PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
+DEF SpindleSps( _bReqSpindleStop:IN, _bFault:OUT  )
+;************************************************
+;              CNC Robotics Ltd
+;              www.cncrobotics.co.uk
+;************************************************
+;     Contact: helpdesk@cncrobotics.co.uk
+;     Date: 25/09/23
+;     Version: 0.13.46
+;************************************************
+; Description: sps control specific for the spindle.
+;************************************************
+  
+BOOL _bFault, _bReqSpindleStop, _bInvStop
+
+;Inverter stopped flag if inverter status isn't ok, in auto/external, not in an e-stop state and not in fault stop
+_bInvStop = ((NOT iInvOK) AND ($AUT OR $EXT) AND ($ALARM_STOP) AND ($USER_SAF) AND (oSpindleOn))
+
+;If the Inverter has stopped stop the program
+IF _bInvStop  THEN ;==FALSE  THEN
+	CWRITE($CMD,E_stat,E_mode,"STOP 1")
+ENDIF
+
+; To shut spindle and coolant off together if the program is stopped e.g an e-stop press,doors open,
+IF (($PRO_STATE1 <> #P_ACTIVE) OR _bReqSpindleStop) THEN  ;If program is not active
+	oSpindleOn = FALSE  
+	IF (($PRO_STATE1 == #P_STOP) OR _bReqSpindleStop ) THEN
+		bSpindleInterrupt = TRUE  
+	ENDIF
+ELSE
+	;IF (NOT bSpindleInterrupt) THEN    ;If fault stop is FALSE
+	oSpindleOn = bRequestSpindle   ;Set spindle to original state
+	;ENDIF
+ENDIF
+ 
+;If the program is cancelled or reset clear the requests for 
+;spindles 
+IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
+    bRequestSpindle = FALSE
+    bSpindleInterrupt = FALSE
+ENDIF
+   
+; section to stop spindle running and signal to pilz in teach mode
+IF (($T1) OR ($T2))THEN       ; teach mode active
+    oSpindleOn = FALSE         ; set spindle state false 
+ENDIF   
+   
+;Set analog value using nSpindleSpeed
+IF (nSpindleSpeed > 0)  THEN 
+    ;aoSpindleSpeed = nSpindleSpeed * 0.00004761905 ;20,000 RPM Spindle conversion
+    aoSpindleSpeed = nSpindleSpeed * 0.0000416666 ;24,000 RPM Spindle conversion
+ELSE 
+    aoSpindleSpeed = 0
+ENDIF
+
+;Display feedrate whilst the system is running 
+IF (($PRO_STATE1==#P_ACTIVE ) AND (oSpindleOn)) THEN 
+    nFeedRate = $VEL_ACT * 60000
+ENDIF 
+
+IF ((_bInvStop==TRUE) OR (iSpindleThermal==FALSE)) THEN
+    _bFault = TRUE;
+ELSE
+    _bFault=FALSE
+ENDIF
+
+END
