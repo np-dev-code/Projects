@@ -42,6 +42,9 @@ IF (bPidError OR bStepperError) THEN
       CWRITE($CMD,E_stat,E_mode,"STOP 1")
 ENDIF
 
+;Operator messages for stepper and PID controller alarms
+RoboSyncMsgs()
+
 
 
 bProcessing = TRUE

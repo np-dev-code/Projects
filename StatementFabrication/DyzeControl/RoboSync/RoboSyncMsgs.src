@@ -13,7 +13,8 @@ DEF RoboSyncMsgs(   )
 ;     Date: 14/09/26
 ;     Version: 0.1.1
 ;     Module : RoboSyncMsgs
-;     Purpose: Placeholder for operator messages
+;     Purpose: Operator messages for stepper and PID controller alarms,
+;              call RoboSyncMsgs() cyclically to update them
 ;************************************************
 
 CheckWarningMsg(stepper_positionLimit ,RoboSyncMsg[1], 1)
@@ -87,6 +88,14 @@ END
 
 
 GLOBAL DEF WarningMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : WarningMsg
+; Purpose : Show a notify message once, until it is cleared
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is updated
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+; Notes   : Message number is fin_nGroupNo + nNo
+;------------------------------------------------
 
 DECL RSYNC_MSG_T fin_CNCRMsg
 DECL INT fin_nGroupNo
@@ -100,6 +109,13 @@ ENDIF
 END
 
 GLOBAL DEF DisplayMsg(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : DisplayMsg
+; Purpose : Show a notify message every time it is called
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+;------------------------------------------------
 
 DECL RSYNC_MSG_T fin_CNCRMsg
 DECL INT fin_nGroupNo
@@ -109,6 +125,12 @@ DECL INT fin_nGroupNo
 END
 
 GLOBAL DEF WarningClear(fin_CNCRMsg:OUT )
+;------------------------------------------------
+; Name    : WarningClear
+; Purpose : Re-arm a message so WarningMsg shows it again
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is cleared
+; Returns : -
+;------------------------------------------------
 
 DECL RSYNC_MSG_T fin_CNCRMsg
  
@@ -117,6 +139,15 @@ fin_CNCRMsg.bDisplayFlag= FALSE
 END
 
 GLOBAL DEF CheckWarningMsg(bCondition:IN, fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : CheckWarningMsg
+; Purpose : Show a message once while a condition is TRUE, re-arm it
+;           when the condition clears
+; Params  : bCondition   (IN)  BOOL        : alarm condition, e.g. an alarm bit
+;           fin_CNCRMsg  (OUT) RSYNC_MSG_T : message, bDisplayFlag is updated
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : -
+;------------------------------------------------
 
 DECL RSYNC_MSG_T fin_CNCRMsg
 DECL INT fin_nGroupNo
@@ -132,6 +163,13 @@ ENDIF
 END
 
 GLOBAL DEFFCT INT MessageBoxYesNo(fin_CNCRMsg:OUT, fin_nGroupNo:IN )
+;------------------------------------------------
+; Name    : MessageBoxYesNo
+; Purpose : Show a No/Yes dialog with the message text
+; Params  : fin_CNCRMsg  (OUT) RSYNC_MSG_T : message
+;           fin_nGroupNo (IN)  INT         : message number offset
+; Returns : INT, button answer from MsgDialog
+;------------------------------------------------
 
 DECL RSYNC_MSG_T fin_CNCRMsg
 DECL INT fin_nGroupNo

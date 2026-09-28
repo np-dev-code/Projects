@@ -25,7 +25,7 @@ DECL GLOBAL RSYNC_MSG_T  RoboSyncMsg[58]
 RoboSyncMsg[1]={nNo 1,strName[] "RoboSync",strMsg[] "Stepper has hit a position limit",bDisplayFlag FALSE}
 RoboSyncMsg[2]={nNo 2,strName[] "RoboSync",strMsg[] "Stepper has hit a ccw position limit.",bDisplayFlag FALSE}
 RoboSyncMsg[3]={nNo 3,strName[] "RoboSync",strMsg[] "Stepper has hit a  cw position limit.",bDisplayFlag FALSE}
-RoboSyncMsg[4]={nNo 4,strName[] "RoboSync",strMsg[] "Stepper is over Temperature.",bDisplayFlag TRUE}
+RoboSyncMsg[4]={nNo 4,strName[] "RoboSync",strMsg[] "Stepper is over Temperature.",bDisplayFlag FALSE}
 RoboSyncMsg[5]={nNo 5,strName[] "RoboSync",strMsg[] "Stepper has an internal Voltage Error.",bDisplayFlag FALSE}
 RoboSyncMsg[6]={nNo 6,strName[] "RoboSync",strMsg[] "Stepper has an over Voltage Error.",bDisplayFlag FALSE}
 RoboSyncMsg[7]={nNo 7,strName[] "RoboSync",strMsg[] "Stepper has an under Voltage Error.",bDisplayFlag FALSE}
@@ -73,10 +73,10 @@ RoboSyncMsg[45]={nNo 45,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Cable Resi
 RoboSyncMsg[46]={nNo 46,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Zero out of range",bDisplayFlag FALSE}
 RoboSyncMsg[47]={nNo 47,strName[] "RoboSync",strMsg[] "Extruder1 Pid2 Cold Junction",bDisplayFlag FALSE}
 
-RoboSyncMsg[48]={nNo 48,strName[] "RoboSync",strMsg[] "Nozzle Pid Alarm 1",bDisplayFlag FALSE}
-RoboSyncMsg[49]={nNo 49,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 2",bDisplayFlag FALSE}
-RoboSyncMsg[50]={nNo 50,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 3",bDisplayFlag FALSE}
-RoboSyncMsg[51]={nNo 51,strName[] "RoboSync",strMsg[] "Nozzle Pid1 Alarm 4",bDisplayFlag FALSE}
+RoboSyncMsg[48]={nNo 48,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Alarm 1",bDisplayFlag FALSE}
+RoboSyncMsg[49]={nNo 49,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Alarm 2",bDisplayFlag FALSE}
+RoboSyncMsg[50]={nNo 50,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Alarm 3",bDisplayFlag FALSE}
+RoboSyncMsg[51]={nNo 51,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Alarm 4",bDisplayFlag FALSE}
 RoboSyncMsg[52]={nNo 52,strName[] "RoboSync",strMsg[] "Nozzle Pid3 Low PV conversion",bDisplayFlag FALSE}
 RoboSyncMsg[53]={nNo 53, strName[] "RoboSync",strMsg[] "Nozzle Pid3 Negative conversion", bDisplayFlag FALSE}
 RoboSyncMsg[54]={nNo 54,strName[] "RoboSync",strMsg[] "Nozzle Pid3 high pv conversion", bDisplayFlag FALSE}
