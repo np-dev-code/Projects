@@ -33,25 +33,20 @@ ENDIF
 
 ;STOP IF anything is in error
 
-bStepperError = StepperError()
+bStepperError = StepperError() OR bTimeOutError
 bPidError = PidError(#EXTRUDER0) OR PidError(#EXTRUDER1)
 
+;If it is in error it will continually stop the program
+;won't allow it continue with an error
 IF (bPidError OR bStepperError) THEN
-   IF NOT bErrorStopSent THEN
       CWRITE($CMD,E_stat,E_mode,"STOP 1")
-      bErrorStopSent = TRUE
-   ENDIF
-ELSE
-   bErrorStopSent = FALSE
 ENDIF
 
 
 
-;The RoboSync Hub has no stepper status word (only the alarm code),
-;so each transition waits a fixed time for the drive to act on a command
-;before the next command is written to the opcode register.
 bProcessing = TRUE
 IF bSpsControl == TRUE THEN
+   
 SWITCH stepperState
    
    CASE #NOT_INITIALISED
@@ -62,41 +57,52 @@ SWITCH stepperState
    CASE #RESET
       bResetStepper = FALSE
       StepperOpcode(RESET_ALARM_CODE)
-      StartStepperTimer(nStepperCmdDelay)
+      
       stepperState = #RESETTING
-         
+      StartStepperTimer()  
+      
    CASE #RESETTING
+     IF (stepper_fault==FALSE) THEN
+         StepperOpcode(ENABLE_DRIVE)
+         StartStepperTimer()
+         stepperState = #ENABLED 
+      ENDIF
       IF $TIMER_FLAG[STEPPER_TIMER] THEN
-         IF StepperError() THEN
-            EnterStepperError()
-         ELSE
-            ;Jog accel/decel must be set, with the motor stopped, before jogging
-            stepper_jogAccel = nJogAccel
-            stepper_jogDecel = nJogDecel
-            StepperOpcode(ENABLE_DRIVE)
-            StartStepperTimer(nStepperCmdDelay)
-            stepperState = #ENABLED 
-         ENDIF
+         StepperOpcode(STOP_JOGGING)
+         stepperState = #ERROR 
+         bTimeoutError = TRUE
       ENDIF
       
    CASE #ENABLED
-      IF $TIMER_FLAG[STEPPER_TIMER] THEN
+      IF stepper_enabled THEN
          $TIMER_STOP[STEPPER_TIMER]=TRUE
          stepperState = #STOPPED
+      ELSE
+           IF $TIMER_FLAG[STEPPER_TIMER] THEN
+              StepperOpcode(STOP_JOGGING)
+              stepperState = #ERROR 
+              bTimeoutError = TRUE
+           ENDIF
       ENDIF
 
    CASE #STARTING
       ;Jog speed was written on entry, give it time to reach the drive
       ;before commencing jogging
+      IF stepper_jogging THEN
+           stepperState = #RUNNING
+      ENDIF      
+      
       IF bEnableStepper AND bExtrude AND NOT(bOverrideStepper) THEN
          IF $TIMER_FLAG[STEPPER_TIMER] THEN
-            $TIMER_STOP[STEPPER_TIMER]=TRUE
-            StepperOpcode(COMMENCE_JOGGING)
-            stepperState = #RUNNING
+            StepperOpcode(STOP_JOGGING)
+            stepperState = #ERROR 
+            bTimeoutError = TRUE
+           
          ENDIF
-      ELSE
-         $TIMER_STOP[STEPPER_TIMER]=TRUE
-         stepperState = #STOPPED
+       ELSE
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
       ENDIF
 
    CASE #RUNNING
@@ -114,60 +120,76 @@ SWITCH stepperState
        
          IF NOT (bOverrideStepper) AND bEnableRetract THEN
              stepper_jogSpeed = ToUnsigned16(-nRetractSpeed)
-             prevStepperSpeed = -1 ;Force extrude speed to be rewritten
+             prevStepperSpeed = 0 ;Force extrude speed to be rewritten
              $TIMER[RETRACT_TIMER]=-nRetractTime
              $TIMER_STOP[RETRACT_TIMER]=FALSE
              
              stepperState = #RETRACT
           ELSE   
-             StopStepper()
+    
          ENDIF
- 
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
        ENDIF      
        
        IF(bEnableStepper==FALSE)THEN
-          StopStepper()
+           StepperOpcode(STOP_JOGGING)         
+           StartStepperTimer()
+           stepperState = #STOPPING
        ENDIF
        
         IF(bStepperError)THEN
-          EnterStepperError()
+          StepperOpcode(STOP_JOGGING)
+          stepperState = #ERROR 
         ENDIF
         
    CASE #RETRACT
       IF $TIMER_FLAG[RETRACT_TIMER] THEN
          $TIMER_STOP[RETRACT_TIMER]=TRUE
-         StopStepper()
+         
+         StepperOpcode(STOP_JOGGING)         
+         StartStepperTimer()
+         stepperState = #STOPPING
       ENDIF
-        
+
    CASE #STOPPING
-      IF $TIMER_FLAG[STEPPER_TIMER] THEN
-         $TIMER_STOP[STEPPER_TIMER]=TRUE
+      IF NOT(stepper_stopping) AND NOT(stepper_moving) THEN
          stepperState = #STOPPED
+      ENDIF
+       IF $TIMER_FLAG[RETRACT_TIMER] THEN
+         $TIMER_STOP[RETRACT_TIMER]=TRUE
+         StepperOpcode(STOP_JOGGING)
+         stepperState = #ERROR
       ENDIF
    
    CASE #STOPPED
       IF bEnableStepper AND bExtrude AND NOT(bOverrideStepper) THEN
-         ;Set the jog speed before commencing jogging
-         stepperSpeed = CalcStepperSpeed()
-         stepper_jogSpeed = stepperSpeed
-         prevStepperSpeed = stepperSpeed
-         StartStepperTimer(nStepperStartDelay)
+         ;Set the jog speed to zero, the speed will be set when running
+         stepper_jogSpeed = 0
+         prevStepperSpeed = 0
+         
+         StepperOpcode(COMMENCE_JOGGING)
+         StartStepperTimer()
          stepperState = #STARTING
       ENDIF
 
    CASE #ERROR
       ;Disable the drive once, after the stop command has had time to act.
       ;The stopped timer marks that the disable has been sent.
-      IF $TIMER_FLAG[STEPPER_TIMER] AND NOT $TIMER_STOP[STEPPER_TIMER] THEN
-         StepperOpcode(DISABLE_DRIVE)
+      IF ($TIMER_STOP[STEPPER_TIMER]==FALSE) THEN
          $TIMER_STOP[STEPPER_TIMER]=TRUE
       ENDIF
-      IF bResetStepper AND $TIMER_STOP[STEPPER_TIMER] THEN
+      IF NOT (stepper_moving) and stepper_enabled THEN
+            StepperOpcode(DISABLE_DRIVE)
+      ENDIF
+      IF bResetStepper THEN
          stepperState = #RESET
       ENDIF
-
 ENDSWITCH
+
 ENDIF
+      
 bProcessing = FALSE
 
 IF ($PRO_STATE1 == #P_FREE) OR ($PRO_STATE1 == #P_RESET) THEN
@@ -229,50 +251,21 @@ ENDIF
 END
 
 
-DEF StartStepperTimer(fi_nTime:IN)
+DEF StartStepperTimer()
 ;------------------------------------------------
 ; Name    : StartStepperTimer
-; Purpose : Restart STEPPER_TIMER, $TIMER_FLAG goes TRUE after fi_nTime
-; Params  : fi_nTime   (IN) INT : time, ms
+; Purpose : Restart STEPPER_TIMER, $TIMER_FLAG goes TRUE after nStepperTimeout
+; Params  : -
 ; Returns : -
 ;------------------------------------------------
 ;Restart the stepper timer, $TIMER_FLAG goes TRUE after fi_nTime ms
-DECL INT fi_nTime
 
-$TIMER_STOP[STEPPER_TIMER]=TRUE
-$TIMER[STEPPER_TIMER]=-fi_nTime
-$TIMER_STOP[STEPPER_TIMER]=FALSE
-
-END
-
-DEF StopStepper()
-;------------------------------------------------
-; Name    : StopStepper
-; Purpose : Stop jogging and move to STOPPING for nStepperStopTime
-; Params  : -
-; Returns : -
-;------------------------------------------------
-
-StepperOpcode(STOP_JOGGING)
-StartStepperTimer(nStepperStopTime)
-stepperState = #STOPPING
+ $TIMER[STEPPER_TIMER]=-nStepperTimeout
+ $TIMER_STOP[STEPPER_TIMER]=FALSE
+ bTimeoutError = FALSE
 
 END
 
-DEF EnterStepperError()
-;------------------------------------------------
-; Name    : EnterStepperError
-; Purpose : Stop jogging and move to ERROR, the drive is disabled once
-;           nStepperStopTime has elapsed
-; Params  : -
-; Returns : -
-;------------------------------------------------
-
-StepperOpcode(STOP_JOGGING)
-StartStepperTimer(nStepperStopTime)
-stepperState = #ERROR
-
-END
 
 DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
@@ -285,10 +278,14 @@ DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
 ;Extruder jog speed for the current robot speed, uses the programmed
 ;speed when stationary so purging in place still extrudes
-
+INT _nSpeed
+REAL _rSpeed
 IF $VEL_ACT < 0.001 THEN
-   RETURN RoboSyncSpeed($VEL.CP)
+   _rSpeed = RoboSyncSpeed($VEL.CP)
+ELSE
+  _rSpeed = RoboSyncSpeed($VEL_ACT)
 ENDIF
-RETURN RoboSyncSpeed($VEL_ACT)
+_nSpeed = _rSpeed
 
+RETURN _nSpeed
 ENDFCT

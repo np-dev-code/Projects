@@ -34,25 +34,19 @@ GLOBAL INT stepperSpeed = 0
 GLOBAL INT prevStepperSpeed = 0
 
 GLOBAL CONST INT STEPPER_TIMER=16
-GLOBAL INT nStepperCmdDelay = 200 ;ms allowed for the drive to act on reset/enable
-GLOBAL INT nStepperStartDelay = 50 ;ms between writing the jog speed and commence jogging
-GLOBAL INT nStepperStopTime = 200 ;ms for the motor to decelerate to a stop, increase if nJogDecel is lowered
-
-GLOBAL INT nJogAccel = 6000 ;Unit 10 RPM/s, 6000 = 1000 rps/s (drive power-up default)
-GLOBAL INT nJogDecel = 6000 ;Unit 10 RPM/s
+GLOBAL INT nStepperTimeout = 200 ;ms allowed for the drive to act on reset/enable
+GLOBAL BOOL bTimeoutError=FALSE
 
 GLOBAL CONST INT RETRACT_TIMER=17
 GLOBAL INT nRetractTime = 500
-
 GLOBAL INT nRetractSpeed = 100
 
 GLOBAL BOOL bEnableRetract = FALSE
 
-
-
 GLOBAL CONST INT HEATER_TIMER= 18
 GLOBAL INT nHeaterTimeout=600000
 
+;TIMER 19 IS USED FOR AUTOTUNE
 
 GLOBAL BOOL bOverrideHeaters=FALSE
 GLOBAL BOOL bOverrideSteppers=FALSE
