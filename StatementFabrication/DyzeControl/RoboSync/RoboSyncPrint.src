@@ -10,18 +10,20 @@ DEF RoboSyncPrint( )
 ;     Date: 14/09/26
 ;     Version: 0.1.1
 ;     Module : RoboSyncPrint
-;     Purpose: Stepper drive commands and parameters for the RoboSync Hub
+;     Purpose: Print start and finish sequences
 ;************************************************
 END
 
 GLOBAL DEF StartPrint()
 ;------------------------------------------------
 ; Name    : StartPrint
-; Purpose : Write one stepper drive parameter
+; Purpose : Prepare to print: set the filament and bead parameters,
+;           heat the extruder zones and enable the stepper
 ; Params  : -
 ; Returns : -
-; Notes   : Controls the Heatzones and Stepper before printing
-;           
+; Notes   : Returns with the drive enabled and ready (STOPPED), or in
+;           ERROR. Extrusion starts when the program sets bExtrude.
+;           Robot interpreter only (WAIT)
 ;------------------------------------------------
 
 rFilamentOD = 2.85
@@ -37,34 +39,33 @@ WaitForExtruderTemps()
 
 bSpsControl = TRUE
 bEnableRetract = FALSE
-bEnableStepper = TRUE
-WAIT FOR stepperState
 bExtrude = FALSE
-WAIT FOR stepperState == #RUNNNING
+bEnableStepper = TRUE
+
+;Drive enabled and ready, extrusion starts when bExtrude is set
+WAIT FOR (stepperState == #STOPPED) OR (stepperState == #ERROR)
 
 END
 
 GLOBAL DEF FinishPrint()
 ;------------------------------------------------
-; Name    : StartPrint
-; Purpose : Write one stepper drive parameter
+; Name    : FinishPrint
+; Purpose : Finish printing: stop and disable the stepper, then switch
+;           the extruder heat zones off
 ; Params  : -
 ; Returns : -
-; Notes   : Controls the Heatzones and Stepper before printing
-;           
+; Notes   : Doesn't wait for the heaters to cool.
+;           Robot interpreter only (WAIT)
 ;------------------------------------------------
-
-SetExtruderHeatZones(0.0, 0.0)
-
-WaitForExtruderTemps()
 
 bSpsControl = TRUE
 bEnableRetract = FALSE
 bExtrude = FALSE
 bEnableStepper = FALSE
 
+WAIT FOR (stepperState == #DISABLED) OR (stepperState == #ERROR)
 
-WAIT FOR stepperState == #RUNNNING
+SetExtruderHeatZones(0.0, 0.0)
 
 END
 

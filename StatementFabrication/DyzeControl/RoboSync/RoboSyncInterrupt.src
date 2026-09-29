@@ -34,7 +34,8 @@ IF StepperError() THEN
 ENDIF 
 
 ;Stepper only restarts if extruding, otherwise it is expected to stay stopped
-WAIT FOR (stepperState==#RUNNING) OR ((stepperState==#STOPPED) AND NOT bExtrude)
+;A disabled stepper stays DISABLED
+WAIT FOR (stepperState==#RUNNING) OR ((stepperState==#STOPPED) AND NOT bExtrude) OR ((stepperState==#DISABLED) AND NOT bEnableStepper)
 
 
 bRoboSyncInterrupt = FALSE

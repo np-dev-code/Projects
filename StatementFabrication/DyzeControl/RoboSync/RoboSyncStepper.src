@@ -24,7 +24,8 @@ GLOBAL DEF SetStepperParam(fi_param:IN, fi_nVal:IN)
 ; Notes   : Units (hub guide):
 ;           current 0.01 A, pulse/rev = ppr/2, jog speed 0.25 RPM (signed),
 ;           accel/decel 10 RPM/s, distance pulses.
-;           Robot interpreter only (WAIT)
+;           Writes the outputs directly, without taking control from the
+;           SPS; don't write a parameter the SPS is writing at the same time
 ;------------------------------------------------
 DECL ENUM_STEPPER_PARAM fi_param
 DECL INT fi_nVal

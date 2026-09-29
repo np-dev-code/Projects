@@ -47,9 +47,14 @@ ENDIF
 bProcessing = TRUE
 IF bSpsControl == TRUE THEN
 
-IF ((stepperState<>#DISABLED) AND (bStepperError)) THEN
- StepperOpcode(STOP_JOGGING)
- stepperState = #ERROR 
+;Any error stops the stepper. DISABLED, RESET, RESETTING and ERROR are
+;excluded: RESET clears the alarm and bTimeoutError, and must be allowed
+;to run after bResetStepper
+IF bStepperError THEN
+   IF (stepperState<>#DISABLED) AND (stepperState<>#RESET) AND (stepperState<>#RESETTING) AND (stepperState<>#ERROR) THEN
+      StepperOpcode(STOP_JOGGING)
+      stepperState = #ERROR 
+   ENDIF
 ENDIF
 
 SWITCH stepperState
@@ -284,7 +289,8 @@ END
 DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
 ; Name    : CalcStepperSpeed
-; Purpose : Extruder jog speed for the current robot speed
+; Purpose : Extruder jog speed: nCommandedFeedSpeed when bCommandedFeed
+;           is TRUE, otherwise calculated from the robot speed
 ; Params  : -
 ; Returns : INT, jog speed register value
 ; Notes   : Uses the programmed $VEL.CP when the robot is stationary so
@@ -292,8 +298,8 @@ DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
 ;Extruder jog speed for the current robot speed, uses the programmed
 ;speed when stationary so purging in place still extrudes
-IF bFixedExtrusion THEN
-   RETURN nFixedSpeed
+IF bCommandedFeed THEN
+   RETURN nCommandedFeedSpeed
 ENDIF
 
 IF $VEL_ACT < 0.001 THEN

@@ -30,8 +30,8 @@ GLOBAL BOOL bRoboSyncInterrupt = FALSE
 
 GLOBAL BOOL bExtrude = FALSE
 
-GLOBAL BOOL bFixedExtrusion=FALSE
-GLOBAL INT  nFixedSpeed = 0
+GLOBAL BOOL bCommandedFeed=FALSE      ;TRUE: jog speed set by the program (e.g. CAD/CAM), not the robot speed
+GLOBAL INT  nCommandedFeedSpeed = 0   ;Commanded jog speed, 0.25 RPM units
 
 GLOBAL INT stepperSpeed = 0
 GLOBAL INT prevStepperSpeed = 0
