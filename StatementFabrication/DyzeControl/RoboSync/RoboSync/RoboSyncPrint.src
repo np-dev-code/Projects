@@ -1,0 +1,70 @@
+&ACCESS RVO3
+&REL 16
+&PARAM DISKPATH = KRC:\R1\System\RoboSync
+DEF RoboSyncPrint( )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;     Module : RoboSyncPrint
+;     Purpose: Print start and finish sequences
+;************************************************
+END
+
+GLOBAL DEF StartPrint()
+;------------------------------------------------
+; Name    : StartPrint
+; Purpose : Prepare to print: set the filament and bead parameters,
+;           heat the extruder zones and enable the stepper
+; Params  : -
+; Returns : -
+; Notes   : Returns with the drive enabled and ready (STOPPED), or in
+;           ERROR. Extrusion starts when the program sets bExtrude.
+;           Robot interpreter only (WAIT)
+;------------------------------------------------
+
+rFilamentOD = 2.85
+rLayerHeight = 0.5
+rLayerWidth = 0.5
+
+rExtrusionConstant = 1.0
+
+SetExtruderHeatZones(180.0, 180.0)
+
+
+WaitForExtruderTemps()
+
+bSpsControl = TRUE
+bEnableRetract = FALSE
+bExtrude = FALSE
+bEnableStepper = TRUE
+
+;Drive enabled and ready, extrusion starts when bExtrude is set
+WAIT FOR (stepperState == #STOPPED) OR (stepperState == #ERROR)
+
+END
+
+GLOBAL DEF FinishPrint()
+;------------------------------------------------
+; Name    : FinishPrint
+; Purpose : Finish printing: stop and disable the stepper, then switch
+;           the extruder heat zones off
+; Params  : -
+; Returns : -
+; Notes   : Doesn't wait for the heaters to cool.
+;           Robot interpreter only (WAIT)
+;------------------------------------------------
+
+bSpsControl = TRUE
+bEnableRetract = FALSE
+bExtrude = FALSE
+bEnableStepper = FALSE
+
+WAIT FOR (stepperState == #DISABLED) OR (stepperState == #ERROR)
+
+SetExtruderHeatZones(0.0, 0.0)
+
+END

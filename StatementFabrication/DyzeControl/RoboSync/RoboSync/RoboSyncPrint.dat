@@ -1,0 +1,17 @@
+&ACCESS RVO3
+&REL 16
+&PARAM DISKPATH = KRC:\R1\System\RoboSync
+DEFDAT  RoboSyncPrint PUBLIC
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstate.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;************************************************
+
+;Print settings go here. The drive opcode constants and ENUM_STEPPER_PARAM
+;are declared in RoboSyncStepper.dat
+
+ENDDAT
