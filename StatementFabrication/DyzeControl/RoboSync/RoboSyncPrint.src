@@ -1,0 +1,71 @@
+&ACCESS RVO3
+&REL 16
+&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+DEF RoboSyncPrint( )
+;************************************************
+;     NextState Automation Ltd
+;     www.nextstateautomation.co.uk
+;************************************************
+;     Contact: helpdesk@nextstateautomation.co.uk
+;     Date: 14/09/26
+;     Version: 0.1.1
+;     Module : RoboSyncPrint
+;     Purpose: Stepper drive commands and parameters for the RoboSync Hub
+;************************************************
+END
+
+GLOBAL DEF StartPrint()
+;------------------------------------------------
+; Name    : StartPrint
+; Purpose : Write one stepper drive parameter
+; Params  : -
+; Returns : -
+; Notes   : Controls the Heatzones and Stepper before printing
+;           
+;------------------------------------------------
+
+rFilamentOD = 2.85
+rLayerHeight = 0.5
+rLayerWidth = 0.5
+
+rExtrusionConstant = 1.0
+
+SetExtruderHeatZones(180.0, 180.0)
+
+
+WaitForExtruderTemps()
+
+bSpsControl = TRUE
+bEnableRetract = FALSE
+bEnableStepper = TRUE
+WAIT FOR stepperState
+bExtrude = FALSE
+WAIT FOR stepperState == #RUNNNING
+
+END
+
+GLOBAL DEF FinishPrint()
+;------------------------------------------------
+; Name    : StartPrint
+; Purpose : Write one stepper drive parameter
+; Params  : -
+; Returns : -
+; Notes   : Controls the Heatzones and Stepper before printing
+;           
+;------------------------------------------------
+
+SetExtruderHeatZones(0.0, 0.0)
+
+WaitForExtruderTemps()
+
+bSpsControl = TRUE
+bEnableRetract = FALSE
+bExtrude = FALSE
+bEnableStepper = FALSE
+
+
+WAIT FOR stepperState == #RUNNNING
+
+END
+
+

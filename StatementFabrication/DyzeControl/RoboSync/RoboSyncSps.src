@@ -25,7 +25,7 @@ DECL MODUS_T E_mode
 ;is just booting up, set straight away so we can initialise
 ;any variables here
 IF oStartUpFlag == FALSE THEN
-  stepperState = #NOT_INITIALISED 
+  stepperState = #DISABLED 
   oStartUpFlag = TRUE
 ENDIF
 
@@ -33,7 +33,7 @@ ENDIF
 
 ;STOP IF anything is in error
 
-bStepperError = StepperError() OR bTimeOutError
+bStepperError = StepperError() OR bTimeoutError
 bPidError = PidError(#EXTRUDER0) OR PidError(#EXTRUDER1)
 
 ;If it is in error it will continually stop the program
@@ -46,14 +46,18 @@ ENDIF
 
 bProcessing = TRUE
 IF bSpsControl == TRUE THEN
-   
+
+IF ((stepperState<>#DISABLED) AND (bStepperError)) THEN
+ StepperOpcode(STOP_JOGGING)
+ stepperState = #ERROR 
+ENDIF
+
 SWITCH stepperState
    
-   CASE #NOT_INITIALISED
+   CASE #DISABLED 
       IF bEnableStepper THEN
          stepperState = #RESET
-      ENDIF   
-      
+      ENDIF     
    CASE #RESET
       bResetStepper = FALSE
       StepperOpcode(RESET_ALARM_CODE)
@@ -138,11 +142,6 @@ SWITCH stepperState
            StartStepperTimer()
            stepperState = #STOPPING
        ENDIF
-       
-        IF(bStepperError)THEN
-          StepperOpcode(STOP_JOGGING)
-          stepperState = #ERROR 
-        ENDIF
         
    CASE #RETRACT
       IF $TIMER_FLAG[RETRACT_TIMER] THEN
@@ -154,7 +153,7 @@ SWITCH stepperState
       ENDIF
 
    CASE #STOPPING
-      ;Time out on STEPPER_TIMER (started on entry). RETRACT_TIMER can't
+      ;Timeout on STEPPER_TIMER (started on entry). RETRACT_TIMER can't
       ;be used here: its flag stays TRUE after a retract has finished
       IF NOT(stepper_stopping) AND NOT(stepper_moving) THEN
          $TIMER_STOP[STEPPER_TIMER]=TRUE
@@ -177,6 +176,21 @@ SWITCH stepperState
          StartStepperTimer()
          stepperState = #STARTING
       ENDIF
+      
+      IF NOT bEnableStepper THEN
+         StepperOpcode(DISABLE_DRIVE)
+         StartStepperTimer()
+         stepperState = #DISABLING
+      ENDIF
+   CASE #DISABLING
+      IF (stepper_enabled == FALSE) THEN
+         stepperState = #DISABLED
+      ENDIF
+       IF $TIMER_FLAG[STEPPER_TIMER] THEN
+         stepperState = #ERROR 
+         bTimeoutError = TRUE
+      ENDIF
+
 
    CASE #ERROR
       ;Disable the drive once, after the stop command has had time to act.
@@ -204,17 +218,17 @@ ENDIF
 
 IF ($PRO_STATE1 <> #P_FREE) THEN
 	IF ($PRO_STATE1 <> #P_ACTIVE) THEN  ;If program is not active
-		IF bOverrideHeaters==FALSE THEN
-			$TIMER_STOP[HEATER_TIMER] = FALSE
+		
+		IF ($TIMER_STOP[HEATER_TIMER] == TRUE)THEN
+		$TIMER_STOP[HEATER_TIMER] = FALSE
       ENDIF
-      
 		IF ($PRO_STATE1 == #P_STOP) THEN
 			bOverrideStepper = TRUE ;Stop extruding while the program is stopped
 			bRoboSyncInterrupt = TRUE
 		ENDIF
 	ELSE
 		bOverrideStepper = FALSE   
-		bOverrideHeaters   = FALSE
+
 		$TIMER_STOP[HEATER_TIMER] = TRUE
 		$TIMER_FLAG[HEATER_TIMER] = FALSE
 		$TIMER[HEATER_TIMER] = -nHeaterTimeout
@@ -223,7 +237,10 @@ ELSE
    $TIMER_STOP[HEATER_TIMER] = FALSE
 ENDIF
 	
-
+;If the program has been stopped for the heater_timer, e.g. 10 minutes then 
+;Set points will be zero'ed, so they do not sit cooking the system
+;particularly important customer wants to leave the system unattended for
+;any period of time
 IF $TIMER_FLAG[HEATER_TIMER] THEN
    IF (bTemperatureSave == FALSE) THEN
       
@@ -237,20 +254,13 @@ IF $TIMER_FLAG[HEATER_TIMER] THEN
       PidSetPoint(#EXTRUDER0,0 )
       PidSetPoint(#EXTRUDER1,0 )
       PidSetPoint(#NOZZLE,0 )
-      
+            
       $TIMER_STOP[HEATER_TIMER] = TRUE
       $TIMER_FLAG[HEATER_TIMER] = FALSE
       $TIMER[HEATER_TIMER] = -nHeaterTimeout
    ENDIF
 ENDIF
 		
- 
-IF ($ALARM_STOP) THEN
-    bOverrideHeaters =  NOT ((bEnableHeaters) AND (NOT $TIMER_FLAG[HEATER_TIMER]))
-ELSE
-   bOverrideHeaters   = TRUE
-   bOverrideStepper = TRUE
-ENDIF
 
 END
 
@@ -282,14 +292,14 @@ DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
 ;Extruder jog speed for the current robot speed, uses the programmed
 ;speed when stationary so purging in place still extrudes
-INT _nSpeed
-REAL _rSpeed
-IF $VEL_ACT < 0.001 THEN
-   _rSpeed = RoboSyncSpeed($VEL.CP)
-ELSE
-  _rSpeed = RoboSyncSpeed($VEL_ACT)
+IF bFixedExtrusion THEN
+   RETURN nFixedSpeed
 ENDIF
-_nSpeed = _rSpeed
 
-RETURN _nSpeed
+IF $VEL_ACT < 0.001 THEN
+   RETURN RoboSyncSpeed($VEL.CP)
+ELSE
+  RETURN RoboSyncSpeed($VEL_ACT)
+ENDIF
+
 ENDFCT

@@ -481,9 +481,7 @@ GLOBAL DEF SetTemperature (fi_pidType:IN,fi_temp:IN)
 ;------------------------------------------------
 REAL fi_temp
 DECL ENUM_PID_TYPE fi_pidType
-INT _nVal
 
-_nVal = fi_temp*10
 
 IF fi_temp < GetLowerTemperature(fi_pidType) THEN
 SetLowerTemperature(fi_pidType ,fi_temp * pidDefaultLowerLimit)

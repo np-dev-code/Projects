@@ -1,17 +1,18 @@
 &ACCESS RVP
 &REL 11
-GLOBAL DEFFCT REAL RoboSyncSpeed(fi_rRobotSpeed:IN)
+GLOBAL DEFFCT INT RoboSyncSpeed(fi_rRobotSpeed:IN)
 ;------------------------------------------------
 ; Name    : RoboSyncSpeed
 ; Purpose : Convert a robot TCP speed into the extruder jog speed that
 ;           extrudes a bead of rLayerHeight x rLayerWidth
 ; Params  : fi_rRobotSpeed (IN) REAL : TCP speed, m/s
-; Returns : REAL, jog speed register value, 0..19200 (0.25 RPM units)
+; Returns : INT, jog speed register value, 0..19200 (0.25 RPM units)
 ; Notes   : Flow is scaled by rExtrusionConstant
 ;------------------------------------------------
 
 REAL fi_rRobotSpeed
 REAL _rVolPerMM, _rSpeed,_rVolPerSec, _rRevsPerMM,_rVolPerRev
+INT _nSpeed
 
 ;Robot speed is passed in as m/sec, converted to mm/s by *1000
 _rVolPerSec = rLayerHeight*rLayerWidth*(fi_rRobotSpeed*1000)
@@ -32,8 +33,8 @@ ENDIF
 IF _rSpeed < 0 THEN
    _rSpeed = 0
 ENDIF
-
-RETURN _rSpeed
+_nSpeed = _rSpeed
+RETURN _nSpeed
 
 ENDFCT
 
