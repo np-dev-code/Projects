@@ -3,7 +3,7 @@
 &COMMENT Ansteuerung Micromaster Frequenzumrichter
 &PARAM EDITMASK = *
 &PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
-&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&PARAM DISKPATH = KRC:\R1\System\RoboSync
 DEF RoboSyncSps(   )
 ;************************************************
 ;     NextState Automation Ltd

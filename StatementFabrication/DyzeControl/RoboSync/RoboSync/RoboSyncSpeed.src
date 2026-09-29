@@ -1,0 +1,39 @@
+&ACCESS RVP
+&REL 11
+GLOBAL DEFFCT INT RoboSyncSpeed(fi_rRobotSpeed:IN)
+;------------------------------------------------
+; Name    : RoboSyncSpeed
+; Purpose : Convert a robot TCP speed into the extruder jog speed that
+;           extrudes a bead of rLayerHeight x rLayerWidth
+; Params  : fi_rRobotSpeed (IN) REAL : TCP speed, m/s
+; Returns : INT, jog speed register value, 0..19200 (0.25 RPM units)
+; Notes   : Flow is scaled by rExtrusionConstant
+;------------------------------------------------
+
+REAL fi_rRobotSpeed
+REAL _rVolPerMM, _rSpeed,_rVolPerSec, _rRevsPerMM,_rVolPerRev
+INT _nSpeed
+
+;Robot speed is passed in as m/sec, converted to mm/s by *1000
+_rVolPerSec = rLayerHeight*rLayerWidth*(fi_rRobotSpeed*1000)
+
+_rRevsPerMM = rStepsPerMM / rStepsPerRev
+_rVolPerMM = PI * (rFilamentOD*rFilamentOD)/4
+_rVolPerRev =  _rVolPerMM/_rRevsPerMM
+
+; The 240 is 60 to convert rps to rpm, *4 to turn rpm into
+;the JOG register unit of 0.25 RPM (RoboSync Hub guide, Set jogging
+;speed), as these are constant the calculation is done offline 60*4=240
+_rSpeed = rExtrusionConstant*(240*_rVolPerSec/_rVolPerRev)
+
+;Clamp to the jog speed register range, 19200 = 4800 RPM
+IF _rSpeed > 19200 THEN
+   _rSpeed = 19200
+ENDIF
+IF _rSpeed < 0 THEN
+   _rSpeed = 0
+ENDIF
+_nSpeed = _rSpeed
+RETURN _nSpeed
+
+ENDFCT
