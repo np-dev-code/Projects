@@ -3,7 +3,7 @@
 &COMMENT Ansteuerung Micromaster Frequenzumrichter
 &PARAM EDITMASK = *
 &PARAM TEMPLATE = C:\KRC\Roboter\Template\ExpertSubmit
-&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&PARAM DISKPATH = KRC:\R1\System\RoboSync
 DEF RoboSyncSps(   )
 ;************************************************
 ;     NextState Automation Ltd
@@ -298,8 +298,12 @@ DEFFCT INT CalcStepperSpeed()
 ;------------------------------------------------
 ;Extruder jog speed for the current robot speed, uses the programmed
 ;speed when stationary so purging in place still extrudes
+REAL _rSpeed
+INT _nSpeed
 IF bCommandedFeed THEN
-   RETURN nCommandedFeedSpeed
+   _rSpeed = rExtrusionConstant*nCommandedFeedSpeed
+   _nSpeed = _rSpeed    ; Explicity cast to a int
+   RETURN  _nSpeed
 ENDIF
 
 IF $VEL_ACT < 0.001 THEN

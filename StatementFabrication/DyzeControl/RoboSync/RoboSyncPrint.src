@@ -1,6 +1,6 @@
 &ACCESS RVO3
 &REL 16
-&PARAM DISKPATH = KRC:\R1\TP\CNCRobotics\CEAD
+&PARAM DISKPATH = KRC:\R1\System\RoboSync
 DEF RoboSyncPrint( )
 ;************************************************
 ;     NextState Automation Ltd
@@ -43,7 +43,7 @@ bExtrude = FALSE
 bEnableStepper = TRUE
 
 ;Drive enabled and ready, extrusion starts when bExtrude is set
-WAIT FOR (stepperState == #STOPPED) OR (stepperState == #ERROR)
+WAIT FOR (stepperState == #STOPPED)
 
 END
 
@@ -63,10 +63,8 @@ bEnableRetract = FALSE
 bExtrude = FALSE
 bEnableStepper = FALSE
 
-WAIT FOR (stepperState == #DISABLED) OR (stepperState == #ERROR)
+WAIT FOR (stepperState == #DISABLED)
 
 SetExtruderHeatZones(0.0, 0.0)
 
 END
-
-
